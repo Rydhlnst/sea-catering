@@ -11,6 +11,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import { Skeleton } from "../ui/skeleton";
 
 interface GalleryItem {
   id: string;
@@ -24,6 +25,7 @@ const MenuHeadSection = () => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState<Record<string, boolean>>({});
 
   const items: GalleryItem[] = [
     {
@@ -139,15 +141,23 @@ const MenuHeadSection = () => {
                 >
                   <div>
                     <div className="aspect-3/2 flex overflow-clip rounded-xl">
-                      <div className="flex-1 relative h-full w-full origin-bottom transition duration-300 group-hover:scale-105">
-                        <Image
-                          fill
-                          src={item.image}
-                          alt={item.title}
-                          className="object-cover object-center rounded-xl"
-                        />
-                      </div>
-                    </div>
+                        <div className="flex-1 relative h-full w-full origin-bottom transition duration-300 group-hover:scale-105">
+                            {!imageLoaded[item.id] && (
+                            <Skeleton className="absolute inset-0 h-full w-full rounded-xl" />
+                            )}
+                            <Image
+                            fill
+                            src={item.image}
+                            alt={item.title}
+                            className={`object-cover object-center rounded-xl transition-opacity duration-300 ${
+                                imageLoaded[item.id] ? "opacity-100" : "opacity-0"
+                            }`}
+                            onLoad={() =>
+                                setImageLoaded((prev) => ({ ...prev, [item.id]: true }))
+                            }
+                            />
+                        </div>
+                        </div>
                   </div>
                   <div className="mb-2 line-clamp-3 break-words pt-4 text-lg font-medium md:mb-3 md:pt-4 md:text-xl lg:pt-4 lg:text-2xl">
                     {item.title}
