@@ -66,7 +66,6 @@ const Navbar = () => {
   return (
     <nav className="fixed top-6 inset-x-4 h-16 bg-background border dark:border-slate-700/70 max-w-screen-xl mx-auto rounded-full z-50">
       <div className="h-full flex items-center justify-between px-4">
-        {/* Logo */}
         <Link
           href="/"
           className="flex items-center justify-center gap-2 font-bold text-lg tracking-tight"
@@ -75,7 +74,6 @@ const Navbar = () => {
           <span className="text-primary">SEA</span> Catering
         </Link>
 
-        {/* Desktop Menu */}
         <NavigationMenu className="hidden md:block">
           <NavigationMenuList>
             {menu.map((item) =>
@@ -119,7 +117,6 @@ const Navbar = () => {
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* Auth Buttons + Mobile Menu */}
         <div className="flex items-center gap-3">
           <Button variant="outline" className="hidden sm:inline-flex rounded-full">
             <Link href={auth.login.url}>{auth.login.title}</Link>
@@ -129,31 +126,33 @@ const Navbar = () => {
           </Button>
 
           {/* Mobile */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button size="icon" variant="outline" className="rounded-full">
-                  <List size={20} />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="top" className="pt-10">
-                <SheetHeader>
-                  <SheetTitle>
-                    <Carrot className="inline-block mr-1" />
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="outline" className="rounded-full">
+                <List size={20} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="top" className="pt-0 pb-0 overflow-y-auto h-[calc(100vh-0px)]">
+              <SheetHeader className="px-6 py-5 border-b border-border/50">
+                <SheetTitle className="flex items-center text-xl font-bold">
+                  <Link href="/" className="flex items-center gap-2">
+                    <Carrot className="inline-block mr-1 text-primary" size={24} />
                     SEA Catering
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="mt-4 space-y-3">
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col h-full">
+                <div className="px-6 py-6 space-y-4 flex-grow">
                   {menu.map((item) =>
                     item.items ? (
                       <div key={item.title}>
-                        <p className="font-semibold mb-1">{item.title}</p>
-                        <ul className="pl-4 space-y-2">
+                        <p className="font-semibold text-lg mb-2">{item.title}</p>
+                        <ul className="pl-4 space-y-3">
                           {item.items.map((subItem) => (
                             <li key={subItem.title}>
                               <Link
                                 href={subItem.url}
-                                className="text-sm text-muted-foreground hover:text-primary"
+                                className="block text-base text-muted-foreground hover:text-primary transition-colors py-1"
                               >
                                 {subItem.title}
                               </Link>
@@ -165,25 +164,25 @@ const Navbar = () => {
                       <div key={item.title}>
                         <Link
                           href={item.url}
-                          className="block font-medium hover:text-primary"
+                          className="block font-semibold text-lg hover:text-primary transition-colors py-2"
                         >
                           {item.title}
                         </Link>
                       </div>
                     )
                   )}
-                  <div className="pt-4 space-y-2">
-                    <Button asChild variant="outline" className="w-full rounded-full">
-                      <Link href={auth.login.url}>{auth.login.title}</Link>
-                    </Button>
-                    <Button asChild className="w-full rounded-full">
-                      <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                    </Button>
-                  </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+                <div className="px-6 py-6 space-y-3 border-t border-border/50">
+                  <Button asChild variant="outline" className="w-full rounded-full h-12 text-base">
+                    <Link href={auth.login.url}>{auth.login.title}</Link>
+                  </Button>
+                  <Button asChild className="w-full rounded-full h-12 text-base">
+                    <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>

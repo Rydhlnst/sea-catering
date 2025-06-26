@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/HomePage/Navbar";
-
 import { Changa_One, Rubik_Mono_One, DM_Sans } from "next/font/google";
-import Footer from "@/components/HomePage/Footer";
 
 const changaOne = Changa_One({
   subsets: ["latin"],
@@ -38,13 +35,7 @@ export default function RootLayout({
       <body
         className={`${changaOne.variable} ${rubikMono.variable} ${dmSans.variable} antialiased`}
       >
-        <div className="h-full w-full flex flex-col">
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer/>
-        </div>
+        {children}
       </body>
     </html>
   );

@@ -130,7 +130,7 @@ const MenuHeadSection = () => {
           }}
           className="relative w-full max-w-full md:left-[-1rem]"
         >
-          <CarouselContent className="hide-scrollbar w-full max-w-full md:-mr-4 md:ml-8 2xl:ml-[max(8rem,calc(50vw-700px+1rem))] 2xl:mr-[max(0rem,calc(50vw-700px-1rem))]">
+          <CarouselContent className="hide-scrollbar w-full max-w-full">
             {items.map((item) => (
               <CarouselItem key={item.id} className="ml-8 md:max-w-[452px]">
                 <a
