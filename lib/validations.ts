@@ -1,14 +1,52 @@
 import { z } from "zod"
 
-export const registerSchema = z.object({
-  name: z.string().min(3, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+// Schema dasar User
+export const UserSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }),
+  phoneNumber: z
+    .string()
+    .min(8, { message: "Phone number is too short" })
+    .max(15, { message: "Phone number is too long" })
+    .regex(/^[0-9]+$/, { message: "Phone number must contain only digits" }),
+  email: z.string().email({ message: "Invalid email" }).optional(),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }).optional(),
+  provider: z.enum(["credentials", "google"]).default("credentials"),
 })
 
+export interface SignInWithOAuthParams {
+    provider: "google",
+    providerAccountId: string,
+    user: {
+        name: string,
+        email: string,
+        image: string,
+        username: string,
+    }
+} 
+ 
+export const SignInSchema = z.object({
+    email: z.string().min(1, {message: "Email is required"}).email({message: "Please provide a valid email address"}),
+    password: z.string().min(6, {message: "Password must be at least 6 characters long."}).max(100, {message: "Password cannot exceed 100 characters"})
+})
+
+// Register (Credentials-based)
+export const registerSchema = z.object({
+  name: z.string().min(3, { message: "Name is required" }),
+  username: z.string().min(3, { message: "Username is required" }),
+  phoneNumber: z
+    .string()
+    .min(8, { message: "Phone number is too short" })
+    .max(15, { message: "Phone number is too long" })
+    .regex(/^[0-9]+$/, { message: "Phone number must contain only digits" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+})
+
+// Login (email & password — optional disesuaikan login flow kamu)
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email({ message: "Invalid email" }),
+  password: z.string().min(1, { message: "Password is required" }),
 })
 
 export const mealPlans = {
@@ -18,12 +56,27 @@ export const mealPlans = {
 } as const
 
 export const subscriptionSchema = z.object({
-  name: z.string().min(3),
-  phone: z.string().min(10).max(15),
+  name: z.string().min(3, { message: "Name is required" }),
+  phoneNumber: z
+    .string()
+    .min(10, { message: "Phone number too short" })
+    .max(15, { message: "Phone number too long" }),
   plan: z.enum(["diet", "protein", "royal"]),
-  mealTypes: z.array(z.enum(["breakfast", "lunch", "dinner"])).min(1),
-  deliveryDays: z.array(
-    z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"])
-  ).min(1),
+  mealTypes: z.array(z.enum(["breakfast", "lunch", "dinner"])).min(1, {
+    message: "Select at least one meal type",
+  }),
+  deliveryDays: z
+    .array(
+      z.enum([
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ])
+    )
+    .min(1, { message: "Select at least one delivery day" }),
   allergies: z.string().optional(),
 })

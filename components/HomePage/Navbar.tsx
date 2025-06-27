@@ -74,7 +74,7 @@ const Navbar = () => {
           <span className="text-primary">SEA</span> Catering
         </Link>
 
-        <NavigationMenu className="hidden md:block">
+        <NavigationMenu className="hidden lg:block">
           <NavigationMenuList>
             {menu.map((item) =>
               item.items ? (
