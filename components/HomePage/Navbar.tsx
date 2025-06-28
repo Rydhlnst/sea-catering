@@ -59,7 +59,7 @@ const menu = [
 
 const auth = {
   login: { title: "Log In", url: "/login" },
-  signup: { title: "Sign Up", url: "/signup" },
+  signup: { title: "Sign Up", url: "/sign-up" },
 };
 
 const Navbar = () => {

@@ -1,5 +1,5 @@
 import mongoose, { Mongoose } from "mongoose";
-import "@/database"
+
 import logger from "./logger";
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
@@ -14,7 +14,6 @@ interface MongooseCache {
 }
 
 declare global {
-   
   var mongoose: MongooseCache;
 }
 
@@ -33,7 +32,7 @@ const dbConnect = async (): Promise<Mongoose> => {
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {
-        dbName: "devflow",
+        dbName: "SEACatering",
       })
       .then((result) => {
         logger.info("Connected to MongoDB");
