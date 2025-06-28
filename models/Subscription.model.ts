@@ -13,6 +13,7 @@ export interface ISubscription {
     | "Saturday"
     | "Sunday"
   )[]
+  address: string
   allergies?: string
   active: boolean
 }
@@ -25,7 +26,7 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true, // satu user hanya bisa punya satu subscription aktif
+      unique: true,
     },
     plan: {
       type: Schema.Types.ObjectId,
@@ -36,7 +37,10 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
       type: [String],
       enum: ["Breakfast", "Lunch", "Dinner"],
       required: true,
-      validate: [(v: string[]) => v.length > 0, "At least one meal type is required."],
+      validate: [
+        (v: string[]) => v.length > 0,
+        "At least one meal type is required.",
+      ],
     },
     deliveryDays: {
       type: [String],
@@ -50,7 +54,15 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
         "Sunday",
       ],
       required: true,
-      validate: [(v: string[]) => v.length > 0, "Select at least one delivery day."],
+      validate: [
+        (v: string[]) => v.length > 0,
+        "Select at least one delivery day.",
+      ],
+    },
+    address: {
+      type: String,
+      required: true,
+      trim: true,
     },
     allergies: {
       type: String,
@@ -66,4 +78,5 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
   }
 )
 
-export default models.Subscription || model<ISubscriptionDoc>("Subscription", SubscriptionSchema)
+export default models.Subscription ||
+  model<ISubscriptionDoc>("Subscription", SubscriptionSchema)

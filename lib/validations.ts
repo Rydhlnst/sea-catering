@@ -25,6 +25,16 @@ export interface SignInWithOAuthParams {
     }
 } 
  
+export interface SerializedPlan {
+  _id: string;
+  name: "Diet" | "Protein" | "Royal";
+  price: number;
+  description?: string; 
+  image?: string;      
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const SignInSchema = z.object({
     email: z.string().min(1, {message: "Email is required"}).email({message: "Please provide a valid email address"}),
     password: z.string().min(6, {message: "Password must be at least 6 characters long."}).max(100, {message: "Password cannot exceed 100 characters"})
