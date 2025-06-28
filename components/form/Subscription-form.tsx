@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SerializedPlan } from "@/lib/validations";
 import Image from "next/image";
+import { createSubscription } from "@/lib/actions/subscription.action";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface SubscriptionFormProps {
   plans: SerializedPlan[];
@@ -19,21 +22,21 @@ type MealType = "Breakfast" | "Lunch" | "Dinner";
 type DeliveryDay = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 
 export function SubscriptionForm({ plans }: SubscriptionFormProps) {
+      const router = useRouter();
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<SerializedPlan | null>(null);
   const [mealTypes, setMealTypes] = useState<Set<MealType>>(new Set());
   const [deliveryDays, setDeliveryDays] = useState<Set<DeliveryDay>>(new Set());
   const [address, setAddress] = useState("");
   const [allergies, setAllergies] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Memoize kalkulasi harga agar tidak dihitung ulang terus-menerus
   const totalPrice = useMemo(() => {
     if (!selectedPlan || mealTypes.size === 0 || deliveryDays.size === 0) {
       return 0;
     }
-    // Kalkulasi: Harga per porsi * jumlah tipe makanan * jumlah hari pengiriman (asumsi per minggu)
     const weeklyPrice = selectedPlan.price * mealTypes.size * deliveryDays.size;
-    return weeklyPrice * 4; // Asumsi harga per bulan (4 minggu)
+    return weeklyPrice * 4;
   }, [selectedPlan, mealTypes, deliveryDays]);
 
   const handleCheckboxChange = <T extends string>(setter: React.Dispatch<React.SetStateAction<Set<T>>>, value: T) => {
@@ -50,6 +53,10 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
   
 
   const handleSubmit = async () => {
+    if (!selectedPlan) return;
+
+    setIsSubmitting(true);
+
     const subscriptionData = {
       plan: selectedPlan?._id,
       mealTypes: Array.from(mealTypes),
@@ -58,9 +65,27 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
       allergies,
     };
     
-    // TODO: Panggil Server Action Anda di sini untuk menyimpan data
-    // const result = await createSubscription(subscriptionData);
-    alert("Langganan berhasil dibuat! (Simulasi)\n" + JSON.stringify(subscriptionData, null, 2));
+        try {
+        const result = await createSubscription(subscriptionData);
+
+        if (result.success) {
+            toast.success("Langganan Berhasil!", {
+            description: "Selamat! Anda akan diarahkan ke dashboard Anda.",
+            });
+            router.push("/dashboard");
+        } else {
+            toast.error("Gagal Membuat Langganan", {
+            description: result.error || "Terjadi kesalahan yang tidak diketahui.",
+            });
+        }
+        } catch (error) {
+        console.log(error)
+        toast.error("Gagal Terhubung", {
+            description: "Tidak dapat menghubungi server. Silakan periksa koneksi Anda.",
+        });
+        } finally {
+      setIsSubmitting(false); 
+      }
   };
 
   const mealOptions: MealType[] = ["Breakfast", "Lunch", "Dinner"];
@@ -209,9 +234,16 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
                 </div>
               </CardContent>
             </Card>
-            <Button onClick={handleSubmit} className="w-full" size="lg">Konfirmasi & Lanjutkan ke Pembayaran</Button>
-          </div>
-        )}
+            <Button 
+                onClick={handleSubmit} 
+                className="w-full" 
+                size="lg"
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? "Memproses..." : "Konfirmasi & Lanjutkan ke Pembayaran"}
+            </Button>
+                </div>
+            )}
       </CardContent>
     </Card>
   );

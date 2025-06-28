@@ -1,21 +1,22 @@
-import { Schema, model, models, Document, Types } from "mongoose"
+import { Schema, model, models, Document, Types } from "mongoose";
+
+// ENUMS
+export const MEAL_TYPES = ["Breakfast", "Lunch", "Dinner"] as const;
+export type MealType = (typeof MEAL_TYPES)[number];
+
+export const DELIVERY_DAYS = [
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+] as const;
+export type DeliveryDay = (typeof DELIVERY_DAYS)[number];
 
 export interface ISubscription {
-  user: Types.ObjectId
-  plan: Types.ObjectId
-  mealTypes: ("Breakfast" | "Lunch" | "Dinner")[]
-  deliveryDays: (
-    | "Monday"
-    | "Tuesday"
-    | "Wednesday"
-    | "Thursday"
-    | "Friday"
-    | "Saturday"
-    | "Sunday"
-  )[]
-  address: string
-  allergies?: string
-  active: boolean
+  user: Types.ObjectId;
+  plan: Types.ObjectId;
+  mealTypes: MealType[];
+  deliveryDays: DeliveryDay[];
+  address: string;
+  allergies?: string;
+  active: boolean;
 }
 
 export interface ISubscriptionDoc extends ISubscription, Document {}
@@ -35,7 +36,7 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
     },
     mealTypes: {
       type: [String],
-      enum: ["Breakfast", "Lunch", "Dinner"],
+      enum: MEAL_TYPES,
       required: true,
       validate: [
         (v: string[]) => v.length > 0,
@@ -44,15 +45,7 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
     },
     deliveryDays: {
       type: [String],
-      enum: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
+      enum: DELIVERY_DAYS,
       required: true,
       validate: [
         (v: string[]) => v.length > 0,
@@ -76,7 +69,7 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
   {
     timestamps: true,
   }
-)
+);
 
 export default models.Subscription ||
-  model<ISubscriptionDoc>("Subscription", SubscriptionSchema)
+  model<ISubscriptionDoc>("Subscription", SubscriptionSchema);
