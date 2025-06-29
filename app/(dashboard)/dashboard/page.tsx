@@ -1,23 +1,23 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import dbConnect from "@/lib/mongoose";
+import User from "@/models/User.model";
 import Subscription from "@/models/Subscription.model";
 import { ActiveSubscription } from "@/components/dashboard/active-subscription";
 import { AdminDashboard } from "@/components/dashboard/admin/admin-dashboard";
 import { NoSubscription } from "@/components/dashboard/no-subscription";
-import { Types } from "mongoose";
 
 export default async function DashboardPage() {
+  // 1. Cek autentikasi
   const session = await auth();
-
-  // Jika belum login → redirect
-  if (!session?.user?.id) {
+  if (!session?.user?.email) {
     redirect("/login");
   }
 
+  // 2. Koneksi DB
   await dbConnect();
 
-  // ADMIN dashboard
+  // 3. Cek role admin
   if (session.user.role === "admin") {
     return (
       <div className="container max-w-7xl px-4 mx-auto py-8">
@@ -34,17 +34,16 @@ export default async function DashboardPage() {
     );
   }
 
-  // USER dashboard
-  const userId = session.user.id;
-
-  // ⛔ Hindari casting ObjectId jika tidak valid
-  if (!Types.ObjectId.isValid(userId)) {
-    console.error("Invalid user ID format:", userId);
+  // 4. Ambil user berdasarkan email dari sesi
+  const user = await User.findOne({ email: session.user.email });
+  if (!user) {
+    console.error("User tidak ditemukan untuk email:", session.user.email);
     return <NoSubscription />;
   }
 
-  const userObjectId = new Types.ObjectId(userId);
-  const userSubscription = await Subscription.findOne({ user: userObjectId }).populate("plan");
+  // 5. Ambil langganan berdasarkan user._id
+  const subscription = await Subscription.findOne({ user: user._id }).populate("plan");
+
 
   return (
     <div className="container max-w-7xl px-4 mx-auto py-8">
@@ -57,8 +56,8 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {userSubscription ? (
-        <ActiveSubscription subscription={JSON.parse(JSON.stringify(userSubscription))} />
+      {subscription ? (
+        <ActiveSubscription subscription={JSON.parse(JSON.stringify(subscription))} />
       ) : (
         <NoSubscription />
       )}
