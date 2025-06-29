@@ -4,7 +4,7 @@ import { NextConfig } from "next";
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pino", "pino-pretty"],
   images: {
-    domains: ["deifkwefumgah.cloudfront.net", "source.unsplash.com"], // <- tambahkan domain ini
+    domains: ["deifkwefumgah.cloudfront.net", "placehold.co", "source.unsplash.com"], // <- tambahkan domain ini
   },
 };
 

@@ -1,12 +1,14 @@
 import { Schema, model, models, Document } from "mongoose";
 
-// ENUM sebagai konstanta reusable
+// ENUM untuk jenis plan
 export const PLAN_TYPES = ["Diet", "Protein", "Royal"] as const;
 export type PlanName = (typeof PLAN_TYPES)[number];
 
 export interface IPlan {
   name: PlanName;
-  price: number; // price per meal in Rupiah
+  price: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface IPlanDoc extends IPlan, Document {}
@@ -29,4 +31,6 @@ const PlanSchema = new Schema<IPlanDoc>(
   }
 );
 
-export default models.Plan || model<IPlanDoc>("Plan", PlanSchema);
+const Plan = models?.Plan || model<IPlanDoc>("Plan", PlanSchema);
+
+export default Plan;

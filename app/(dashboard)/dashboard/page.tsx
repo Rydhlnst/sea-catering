@@ -5,7 +5,7 @@ import Subscription from "@/models/Subscription.model";
 import { ActiveSubscription } from "@/components/dashboard/active-subscription";
 import { AdminDashboard } from "@/components/dashboard/admin/admin-dashboard";
 import { NoSubscription } from "@/components/dashboard/no-subscription";
-
+import { Types } from "mongoose";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -15,13 +15,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Pastikan DB siap
   await dbConnect();
 
-  console.log(session)
-
-  // Jika ADMIN, render admin dashboard
-  if (session?.user?.role === "admin") {
+  // ADMIN dashboard
+  if (session.user.role === "admin") {
     return (
       <div className="container max-w-7xl px-4 mx-auto py-8">
         <div className="mb-6">
@@ -37,9 +34,17 @@ export default async function DashboardPage() {
     );
   }
 
-  // Jika USER, render dashboard langganan biasa
+  // USER dashboard
   const userId = session.user.id;
-  const userSubscription = await Subscription.findOne({ user: userId }).populate("plan");
+
+  // ⛔ Hindari casting ObjectId jika tidak valid
+  if (!Types.ObjectId.isValid(userId)) {
+    console.error("Invalid user ID format:", userId);
+    return <NoSubscription />;
+  }
+
+  const userObjectId = new Types.ObjectId(userId);
+  const userSubscription = await Subscription.findOne({ user: userObjectId }).populate("plan");
 
   return (
     <div className="container max-w-7xl px-4 mx-auto py-8">

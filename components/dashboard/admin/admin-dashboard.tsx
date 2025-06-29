@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DateRange } from "react-day-picker";
 import { subDays } from "date-fns";
+import { DateRange } from "react-day-picker";
 
-import { Loader2 } from "lucide-react";
 import { getAdminStats } from "@/lib/actions/admin.action";
 import { DateRangePicker } from "@/components/date-picker";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AddPlanForm } from "./add-plan-form";
 
 interface AdminStats {
   newSubscriptions: number;
@@ -25,49 +33,67 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      if (range.from && range.to) {
-        setLoading(true);
-        const data = await getAdminStats(range.from, range.to);
-        setStats(data);
+    async function fetchStats() {
+      if (!range.from || !range.to) return;
+
+      setLoading(true);
+      try {
+        const res = await getAdminStats(range.from, range.to);
+        setStats(res);
+      } catch (err) {
+        console.error("Failed to fetch admin stats:", err);
+      } finally {
         setLoading(false);
       }
-    };
+    }
+
     fetchStats();
   }, [range]);
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-10">
+      {/* Header */}
+      <div className="space-y-2">
         <h2 className="text-2xl font-semibold">Statistik Langganan</h2>
         <p className="text-sm text-muted-foreground">
           Filter berdasarkan rentang tanggal
         </p>
+        <DateRangePicker range={range} setRange={setRange} />
       </div>
 
-      <DateRangePicker range={range} setRange={setRange} />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading || !stats
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-[100px] rounded-xl" />
+            ))
+          : (
+            <>
+              <StatCard title="Langganan Baru" value={stats.newSubscriptions} />
+              <StatCard title="MRR" value={`Rp${stats.mrr.toLocaleString("id-ID")}`} />
+              <StatCard title="Reaktivasi" value={stats.reactivations} />
+              <StatCard title="Total Aktif" value={stats.totalActive} />
+            </>
+          )}
+      </div>
 
-      {loading || !stats ? (
-        <div className="flex justify-center items-center p-12">
-          <Loader2 className="animate-spin w-6 h-6 text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card title="Langganan Baru" value={stats.newSubscriptions} />
-          <Card title="MRR" value={`Rp${stats.mrr.toLocaleString("id-ID")}`} />
-          <Card title="Reaktivasi" value={stats.reactivations} />
-          <Card title="Total Aktif" value={stats.totalActive} />
-        </div>
-      )}
+      {/* Tambah Paket */}
+      <AddPlanForm />
     </div>
   );
 }
 
-function Card({ title, value }: { title: string; value: string | number }) {
+function StatCard({ title, value }: { title: string; value: string | number }) {
   return (
-    <div className="p-4 border rounded-xl shadow-sm bg-white dark:bg-zinc-900">
-      <p className="text-sm text-muted-foreground">{title}</p>
-      <h3 className="text-2xl font-semibold">{value}</h3>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm text-muted-foreground font-medium">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-semibold">{value}</div>
+      </CardContent>
+    </Card>
   );
 }

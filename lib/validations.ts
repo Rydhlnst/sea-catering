@@ -14,6 +14,11 @@ export const UserSchema = z.object({
   provider: z.enum(["credentials", "google"]).default("credentials"),
 })
 
+export const AddPlanSchema = z.object({
+  name: z.enum(["Diet", "Protein", "Royal"]),
+  price: z.number().min(1000),
+});
+
 export interface SignInWithOAuthParams {
     provider: "google",
     providerAccountId: string,
