@@ -1,14 +1,13 @@
 "use server";
 
-import mongoose from "mongoose";
 import { auth } from "@/auth";
 import dbConnect from "@/lib/mongoose";
 import Subscription from "@/models/Subscription.model";
-import { revalidatePath } from "next/cache";
 import User from "@/models/User.model";
+import { revalidatePath } from "next/cache";
 
 interface SubscriptionData {
-  plan: string; // Plan ObjectId as string
+  plan: string;
   mealTypes: ("Breakfast" | "Lunch" | "Dinner")[];
   deliveryDays: string[];
   address: string;
@@ -25,35 +24,24 @@ export async function createSubscription(
 ): Promise<ActionResponse> {
   try {
     const session = await auth();
+    const userEmail = session?.user?.email;
 
-    // Pastikan user login
-    if (!session?.user?.id) {
-      return {
-        success: false,
-        error: "Anda harus login untuk berlangganan.",
-      };
+    if (!userEmail) {
+      return { success: false, error: "Anda harus login untuk berlangganan." };
     }
 
-    // Validasi ID pengguna
-    const userId = session.user.id;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return {
-        success: false,
-        error: "ID pengguna tidak valid.",
-      };
-    }
-
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-
-    // Koneksi ke database
     await dbConnect();
 
-    // Cek jika user sudah memiliki langganan aktif
-    const existing = await Subscription.findOne({
-      user: userObjectId,
-      status: "active",
-    });
+    // Cari user berdasarkan email
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return { success: false, error: "Pengguna tidak ditemukan." };
+    }
 
+    const userId = user._id;
+
+    // Cek apakah user sudah punya langganan
+    const existing = await Subscription.findOne({ user: userId });
     if (existing) {
       return {
         success: false,
@@ -63,26 +51,27 @@ export async function createSubscription(
 
     // Buat subscription baru
     const newSubscription = await Subscription.create({
-      user: userObjectId,
-      plan: new mongoose.Types.ObjectId(data.plan),
+      user: userId,
+      plan: data.plan,
       mealTypes: data.mealTypes,
       deliveryDays: data.deliveryDays,
       address: data.address,
       allergies: data.allergies,
-      status: "active",
     });
 
-    // Tambahkan subscription ke array `subscriptions` di model User
-    await User.findByIdAndUpdate(userObjectId, {
+    // Tambahkan subscription ke field `subscriptions` milik user
+    await User.findByIdAndUpdate(userId, {
       $push: { subscriptions: newSubscription._id },
     });
 
-    // Revalidate halaman dashboard agar data langganan terbaru muncul
+    // Revalidate halaman dashboard
     revalidatePath("/dashboard");
+
+    console.log("✅ Langganan berhasil dibuat:", newSubscription._id);
 
     return { success: true };
   } catch (error) {
-    console.error("[SUBSCRIPTION_ERROR]", error);
+    console.error("createSubscription error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat membuat langganan. Silakan coba lagi.",

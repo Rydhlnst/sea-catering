@@ -9,7 +9,7 @@ export const DELIVERY_DAYS = [
 export type DeliveryDay = (typeof DELIVERY_DAYS)[number];
 
 export interface ISubscription {
-  user: Types.ObjectId;
+  user: Types.ObjectId; // UUID
   plan: Types.ObjectId;
   mealTypes: MealType[];
   deliveryDays: DeliveryDay[];
@@ -27,7 +27,7 @@ export interface ISubscriptionDoc extends ISubscription, Document {}
 const SubscriptionSchema = new Schema<ISubscriptionDoc>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId, // UUID
       ref: "User",
       required: true,
       unique: true,
@@ -37,7 +37,6 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
       ref: "Plan",
       required: true,
     },
-
     status: {
       type: String,
       enum: ["active", "cancelled"],
@@ -45,7 +44,6 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
     },
     cancelledAt: Date,
     reactivatedAt: Date,
-
     mealTypes: {
       type: [String],
       enum: MEAL_TYPES,
