@@ -1,11 +1,10 @@
 import { Schema, model, models, Document, Types } from "mongoose";
 
-// ENUMS
 export const MEAL_TYPES = ["Breakfast", "Lunch", "Dinner"] as const;
 export type MealType = (typeof MEAL_TYPES)[number];
 
 export const DELIVERY_DAYS = [
-  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
 ] as const;
 export type DeliveryDay = (typeof DELIVERY_DAYS)[number];
 
@@ -16,7 +15,11 @@ export interface ISubscription {
   deliveryDays: DeliveryDay[];
   address: string;
   allergies?: string;
-  active: boolean;
+  status?: "active" | "cancelled";
+  cancelledAt?: Date;
+  reactivatedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ISubscriptionDoc extends ISubscription, Document {}
@@ -34,23 +37,32 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
       ref: "Plan",
       required: true,
     },
+
+    status: {
+      type: String,
+      enum: ["active", "cancelled"],
+      default: "active",
+    },
+    cancelledAt: Date,
+    reactivatedAt: Date,
+
     mealTypes: {
       type: [String],
       enum: MEAL_TYPES,
       required: true,
-      validate: [
-        (v: string[]) => v.length > 0,
-        "At least one meal type is required.",
-      ],
+      validate: {
+        validator: (v: string[]) => v.length > 0,
+        message: "At least one meal type is required.",
+      },
     },
     deliveryDays: {
       type: [String],
       enum: DELIVERY_DAYS,
       required: true,
-      validate: [
-        (v: string[]) => v.length > 0,
-        "Select at least one delivery day.",
-      ],
+      validate: {
+        validator: (v: string[]) => v.length > 0,
+        message: "Select at least one delivery day.",
+      },
     },
     address: {
       type: String,
@@ -61,15 +73,11 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
       type: String,
       trim: true,
     },
-    active: {
-      type: Boolean,
-      default: true,
-    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-export default models.Subscription ||
-  model<ISubscriptionDoc>("Subscription", SubscriptionSchema);
+const Subscription =
+  models.Subscription || model<ISubscriptionDoc>("Subscription", SubscriptionSchema);
+
+export default Subscription;

@@ -22,6 +22,7 @@ export interface SignInWithOAuthParams {
         email: string,
         image: string,
         username: string,
+        role: string
     }
 } 
  

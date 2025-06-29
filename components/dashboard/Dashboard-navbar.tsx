@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react"; // ✅ import ini
 import { cn } from "@/lib/utils";
 import { LogOut, LayoutDashboard } from "lucide-react";
+import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/dashboard", label: "Beranda", icon: LayoutDashboard },
-  // Tambah nav lain jika perlu
 ];
 
 export function DashboardNavbar() {
@@ -17,7 +18,6 @@ export function DashboardNavbar() {
     <header className="sticky top-0 z-30 w-full border-b bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-7xl">
         <div className="flex h-16 items-center justify-between px-4">
-          {/* Logo */}
           <Link
             href="/dashboard"
             className="text-xl font-semibold tracking-tight"
@@ -25,7 +25,6 @@ export function DashboardNavbar() {
             SEA Catering
           </Link>
 
-          {/* Navigation */}
           <nav className="flex items-center gap-4">
             {navItems.map((item) => (
               <Link
@@ -41,13 +40,13 @@ export function DashboardNavbar() {
               </Link>
             ))}
 
-            <Link
-              href="/logout"
-              className="ml-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
+            {/* ✅ Tombol Logout */}
+            <Button
+              onClick={() => signOut({ callbackUrl: "/" })}
             >
               <LogOut className="h-4 w-4" />
               Logout
-            </Link>
+            </Button>
           </nav>
         </div>
       </div>
