@@ -11,13 +11,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ISubscriptionDoc } from "@/models/Subscription.model";
+import { CheckCircle, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils"; // pastikan kamu punya helper `cn`
 
 interface PopulatedSubscription extends Omit<ISubscriptionDoc, "plan"> {
   plan: {
     _id: string;
     name: string;
     price: number;
-  } | null; // Antisipasi jika tidak ter-populate
+  } | null;
 }
 
 interface ActiveSubscriptionProps {
@@ -28,24 +30,34 @@ export function ActiveSubscription({ subscription }: ActiveSubscriptionProps) {
   const isActive = subscription.status === "active";
 
   return (
-    <Card className="border-muted shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
+    <Card className="shadow-sm border-muted bg-background">
+      <CardHeader className="pb-3 border-b">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <CardTitle className="text-xl">Langganan Anda</CardTitle>
             <CardDescription>
-              Detail paket katering aktif Anda.
+              Detail paket katering aktif yang sedang berjalan.
             </CardDescription>
           </div>
-          <Badge variant={isActive ? "default" : "secondary"}>
-            {isActive ? "Aktif" : "Tidak Aktif"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {isActive ? (
+              <Badge variant="default" className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4" />
+                Aktif
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <XCircle className="w-4 h-4" />
+                Tidak Aktif
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
         <InfoBox label="Paket">
-          <p className="text-lg font-semibold">
+          <p className="text-lg font-semibold text-foreground">
             {subscription.plan?.name ?? "Tidak tersedia"}
           </p>
           <p className="text-sm text-muted-foreground">
@@ -56,7 +68,7 @@ export function ActiveSubscription({ subscription }: ActiveSubscriptionProps) {
         </InfoBox>
 
         <InfoBox label="Alamat Pengiriman">
-          <p className="text-base">{subscription.address}</p>
+          <p className="text-base text-foreground">{subscription.address}</p>
         </InfoBox>
 
         <InfoBox label="Jadwal Makan">
@@ -81,7 +93,9 @@ export function ActiveSubscription({ subscription }: ActiveSubscriptionProps) {
 
         {subscription.allergies && (
           <InfoBox label="Catatan Alergi" className="md:col-span-2">
-            <p className="text-base">{subscription.allergies}</p>
+            <p className="text-base text-destructive">
+              {subscription.allergies}
+            </p>
           </InfoBox>
         )}
       </CardContent>
@@ -104,7 +118,12 @@ function InfoBox({
   className?: string;
 }) {
   return (
-    <div className={`rounded-md border p-4 space-y-1 ${className ?? ""}`}>
+    <div
+      className={cn(
+        "rounded-md border bg-muted p-4 space-y-1",
+        className
+      )}
+    >
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
       {children}
     </div>

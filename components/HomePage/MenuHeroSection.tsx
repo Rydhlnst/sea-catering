@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link"; // Gunakan Link dari Next.js untuk navigasi
 
 import { Button } from "@/components/ui/button";
 import type { CarouselApi } from "@/components/ui/carousel";
@@ -11,13 +12,13 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface GalleryItem {
-  id: string;
+  id: string; // ID ini sebaiknya cocok dengan ID di data.ts
   title: string;
   summary: string;
-  url: string;
+  url: string; // URL akan menuju ke halaman detail
   image: string;
 }
 
@@ -27,45 +28,46 @@ const MenuHeadSection = () => {
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [imageLoaded, setImageLoaded] = useState<Record<string, boolean>>({});
 
+  // Data ini bisa juga diambil dari data.ts dan di-filter jika perlu
   const items: GalleryItem[] = [
     {
-      id: "1",
+      id: "grilled-chicken-salad",
       title: "Grilled Chicken Salad",
       summary:
         "Grilled chicken, romaine lettuce, cherry tomatoes, olive oil, lemon dressing",
-      url: "#",
+      url: "/menu/grilled-chicken-salad",
       image: "/grilledchicken.jpg",
     },
     {
-      id: "2",
+      id: "salmon-teriyaki-bowl",
       title: "Salmon Teriyaki Bowl",
       summary:
         "Salmon fillet, brown rice, broccoli, teriyaki sauce, sesame seeds",
-      url: "#",
-      image: "/salmonteriyaki.jpg",
+      url: "/menu/salmon-teriyaki-bowl",
+      image: "/SalmonTeriyaki.jpg",
     },
     {
-      id: "3",
+      id: "vegan-buddha-bowl",
       title: "Vegan Buddha Bowl",
       summary:
         "Quinoa, chickpeas, avocado, kale, beetroot, tahini sauce",
-      url: "#",
+      url: "/menu/vegan-buddha-bowl",
       image: "/buddhavegan.jpg",
     },
     {
-      id: "4",
-      title: "Goulash",
+      id: "goulash",
+      title: "Hearty Goulash",
       summary:
-        "Slow-cooked beef, coconut milk, lemongrass, galangal, spices",
-      url: "#",
+        "A rich Hungarian stew of beef, onions, and paprika, perfect for a hearty meal.",
+      url: "/menu/goulash", // Asumsi Anda akan menambahkan goulash ke data.ts
       image: "/goulash.jpg",
     },
     {
-      id: "5",
+      id: "fruit-yogurt-parfait",
       title: "Fruit Yogurt Parfait",
       summary:
         "Greek yogurt, granola, strawberries, blueberries, honey",
-      url: "#",
+      url: "/menu/fruit-yogurt-parfait", // Asumsi Anda akan menambahkan parfait ke data.ts
       image: "/fruityogurt.jpg",
     },
   ];
@@ -91,13 +93,13 @@ const MenuHeadSection = () => {
             <h2 className="mb-3 text-3xl font-semibold md:mb-4 md:text-4xl lg:mb-6">
               Featured Menu
             </h2>
-            <a
-              href="#"
+            <Link
+              href="/menu" // Arahkan ke halaman menu utama
               className="group flex items-center gap-1 text-sm font-medium md:text-base lg:text-lg"
             >
               View all menu
               <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </a>
+            </Link>
           </div>
           <div className="mt-8 flex shrink-0 items-center justify-start gap-2">
             <Button
@@ -135,7 +137,7 @@ const MenuHeadSection = () => {
           <CarouselContent className="hide-scrollbar w-full max-w-full">
             {items.map((item) => (
               <CarouselItem key={item.id} className="ml-8 md:max-w-[452px]">
-                <a
+                <Link
                   href={item.url}
                   className="group flex flex-col justify-between"
                 >
@@ -169,7 +171,7 @@ const MenuHeadSection = () => {
                     Learn more
                     <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
                   </div>
-                </a>
+                </Link>
               </CarouselItem>
             ))}
           </CarouselContent>

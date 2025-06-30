@@ -3,7 +3,6 @@ import NextAuth, { User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-
 import { SignInSchema } from "./lib/validations";
 import { ActionResponse } from "./types/global";
 import { IAccountDoc } from "./models/Account.model";

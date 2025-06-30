@@ -1,19 +1,21 @@
 "use client";
 
+import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
 import {
   BookOpenText,
   Carrot,
   List,
   SunDim,
   Tree,
+  SignOut,
 } from "@phosphor-icons/react";
-import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
@@ -25,7 +27,21 @@ import {
   NavigationMenuLink,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
+// Menu Utama
 const menu = [
   { title: "Home", url: "/" },
   { title: "Menu", url: "/menu" },
@@ -62,130 +78,181 @@ const auth = {
   signup: { title: "Sign Up", url: "/sign-up" },
 };
 
+// Helper
+const getInitials = (name: string) => {
+  const names = name.trim().split(" ");
+  if (names.length === 1) return names[0].slice(0, 2).toUpperCase();
+  return (names[0][0] + names[1][0]).toUpperCase();
+};
+
+
+
+// Navbar Component
 const Navbar = () => {
+  const { data: session } = useSession();
+
+  const user = session?.user;
+
   return (
-    <nav className="fixed top-6 inset-x-4 h-16 bg-background border dark:border-slate-700/70 max-w-screen-xl mx-auto rounded-full z-50">
-      <div className="h-full flex items-center justify-between px-4">
-        <Link
-          href="/"
-          className="flex items-center justify-center gap-2 font-bold text-lg tracking-tight"
-        >
-          <Carrot className="text-primary text-2xl" />
-          <span className="text-primary">SEA</span> Catering
-        </Link>
+    <div className="absolute top-0 left-0 right-0">
+      <nav className="fixed top-6 inset-x-4 h-16 bg-background/80 backdrop-blur-md border dark:border-slate-700/70 max-w-screen-xl mx-auto rounded-full z-50">
+        <div className="h-full flex items-center justify-between px-4">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-bold text-lg tracking-tight"
+          >
+            <Carrot weight="fill" className="text-primary text-2xl" />
+            <span className="text-primary">SEA</span> Catering
+          </Link>
 
-        <NavigationMenu className="hidden lg:block">
-          <NavigationMenuList>
-            {menu.map((item) =>
-              item.items ? (
-                <NavigationMenuItem key={item.title}>
-                  <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
-                    {item.title}
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[300px] gap-2 p-4 rounded-md">
-                      {item.items.map((subItem) => (
-                        <li key={subItem.title}>
-                          <Link
-                            href={subItem.url}
-                            className="flex gap-3 p-2 rounded-md hover:bg-muted transition"
-                          >
-                            <div className="text-primary">{subItem.icon}</div>
-                            <div>
-                              <div className="font-semibold">{subItem.title}</div>
-                              <p className="text-sm text-muted-foreground">
-                                {subItem.description}
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              ) : (
-                <NavigationMenuItem key={item.title}>
-                  <NavigationMenuLink
-                    asChild
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    <Link href={item.url}>{item.title}</Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              )
+          {/* Desktop Navigation */}
+          <NavigationMenu className="hidden lg:block">
+            <NavigationMenuList>
+              {menu.map((item) =>
+                item.items ? (
+                  <NavigationMenuItem key={item.title}>
+                    <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
+                      {item.title}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[300px] gap-2 p-4 rounded-md">
+                        {item.items.map((subItem) => (
+                          <li key={subItem.title}>
+                            <Link
+                              href={subItem.url}
+                              className="flex gap-3 p-2 rounded-md hover:bg-muted transition"
+                            >
+                              <div className="text-primary">{subItem.icon}</div>
+                              <div>
+                                <div className="font-semibold">
+                                  {subItem.title}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {subItem.description}
+                                </p>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                ) : (
+                  <NavigationMenuItem key={item.title}>
+                    <NavigationMenuLink
+                      asChild
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      <Link href={item.url}>{item.title}</Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )
+              )}
+            </NavigationMenuList>
+          </NavigationMenu>
+
+          {/* Right-side buttons / Avatar */}
+          <div className="flex items-center gap-3">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-10 w-10 rounded-full p-0">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
+                      <AvatarFallback>{getInitials(user.name ?? "U")}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user.name}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <SignOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="outline" className="hidden sm:inline-flex rounded-full">
+                  <Link href={auth.login.url}>{auth.login.title}</Link>
+                </Button>
+                <Button className="rounded-full" onClick={() => signIn()}>
+                  {auth.signup.title}
+                </Button>
+              </>
             )}
-          </NavigationMenuList>
-        </NavigationMenu>
 
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="hidden sm:inline-flex rounded-full">
-            <Link href={auth.login.url}>{auth.login.title}</Link>
-          </Button>
-          <Button className="rounded-full">
-            <Link href={auth.signup.url}>{auth.signup.title}</Link>
-          </Button>
+            {/* Mobile Sheet Menu */}
+            <div className="lg:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button size="icon" variant="outline" className="rounded-full">
+                    <List size={20} />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="top" className="pt-0 pb-0 overflow-y-auto h-screen">
+                  <SheetHeader className="px-6 py-5 border-b border-border/50" />
+                  <div className="flex flex-col h-full">
+                    <div className="px-6 py-6 space-y-4 flex-grow">
 
-          {/* Mobile */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="rounded-full">
-                <List size={20} />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="top" className="pt-0 pb-0 overflow-y-auto h-[calc(100vh-0px)]">
-              <SheetHeader className="px-6 py-5 border-b border-border/50">
-                <SheetTitle className="flex items-center text-xl font-bold">
-                  <Link href="/" className="flex items-center gap-2">
-                    <Carrot className="inline-block mr-1 text-primary" size={24} />
-                    SEA Catering
-                  </Link>
-                </SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col h-full">
-                <div className="px-6 py-6 space-y-4 flex-grow">
-                  {menu.map((item) =>
-                    item.items ? (
-                      <div key={item.title}>
-                        <p className="font-semibold text-lg mb-2">{item.title}</p>
-                        <ul className="pl-4 space-y-3">
-                          {item.items.map((subItem) => (
-                            <li key={subItem.title}>
-                              <Link
-                                href={subItem.url}
-                                className="block text-base text-muted-foreground hover:text-primary transition-colors py-1"
-                              >
-                                {subItem.title}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : (
-                      <div key={item.title}>
-                        <Link
-                          href={item.url}
-                          className="block font-semibold text-lg hover:text-primary transition-colors py-2"
-                        >
-                          {item.title}
-                        </Link>
-                      </div>
-                    )
-                  )}
-                </div>
-                <div className="px-6 py-6 space-y-3 border-t border-border/50">
-                  <Button asChild variant="outline" className="w-full rounded-full h-12 text-base">
-                    <Link href={auth.login.url}>{auth.login.title}</Link>
-                  </Button>
-                  <Button asChild className="w-full rounded-full h-12 text-base">
-                    <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+                    </div>
+                    <div className="px-6 py-6 space-y-3 border-t border-border/50">
+                      {user ? (
+                        <div className="flex items-center gap-4">
+                          <Avatar>
+                            <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
+                            <AvatarFallback>
+                              {getInitials(user.name ?? "U")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="font-semibold">{user.name}</span>
+                            <Button
+                              variant="link"
+                              className="p-0 h-auto justify-start text-red-500"
+                              onClick={() => signOut()}
+                            >
+                              Log out
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="w-full rounded-full h-12 text-base"
+                          >
+                            <Link href={auth.login.url}>{auth.login.title}</Link>
+                          </Button>
+                          <Button
+                            asChild
+                            className="w-full rounded-full h-12 text-base"
+                          >
+                            <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 };
 

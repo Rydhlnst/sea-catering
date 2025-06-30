@@ -1,24 +1,11 @@
-import ProductDetailSection from '@/components/ProductDetailSection'
+import MenuHeadSection from '@/components/HomePage/MenuHeroSection'
 import React from 'react'
 
+// Ini bisa menjadi Server Component karena tidak ada interaktivitas langsung
 const MenuPage = () => {
   return (
-    <div>
-      <ProductDetailSection
-        name="Vegan Buddha Bowl"
-        image="/buddhavegan.jpg"
-        ingredients={[
-            "Quinoa", "Chickpeas", "Avocado", "Kale", "Beetroot", "Tahini Sauce"
-        ]}
-        origin="Inspired by Asian-Middle Eastern fusion. This bowl supports digestive health, energy, and balanced plant-based nutrition."
-        allergens="Contains sesame. Gluten-free. Vegan."
-        nutrition={{
-            calories: 420,
-            protein: 18,
-            carbs: 55,
-            fat: 12,
-        }}
-        />
+    <div className='min-h-screen'>
+      <MenuHeadSection />
     </div>
   )
 }

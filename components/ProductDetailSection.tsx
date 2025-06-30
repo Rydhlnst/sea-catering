@@ -1,7 +1,8 @@
 "use client"
 
+import { GrainsIcon } from "@phosphor-icons/react"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
+import { Barbell, Drop, Fire } from "phosphor-react"
 
 interface ProductDetailSectionProps {
   name: string
@@ -68,20 +69,12 @@ const ProductDetailSection = ({
           <div className="rounded-xl border p-6 bg-muted">
             <h3 className="text-lg font-semibold mb-2">Quick Info</h3>
             <ul className="text-sm space-y-2 text-muted-foreground">
-              <li>🍽 Calories: <strong>{nutrition.calories} kcal</strong></li>
-              <li>💪 Protein: <strong>{nutrition.protein}g</strong></li>
-              <li>🌾 Carbs: <strong>{nutrition.carbs}g</strong></li>
-              <li>🧴 Fat: <strong>{nutrition.fat}g</strong></li>
+              <li className="flex flex-row items-center gap-3"><Fire/> Calories: <strong>{nutrition.calories} kcal</strong></li>
+              <li className="flex flex-row items-center gap-3"><Barbell/> Protein: <strong>{nutrition.protein}g</strong></li>
+              <li className="flex flex-row items-center gap-3"><GrainsIcon/> Carbs: <strong>{nutrition.carbs}g</strong></li>
+              <li className="flex flex-row items-center gap-3"><Drop/> Fat: <strong>{nutrition.fat}g</strong></li>
             </ul>
           </div>
-
-          <Button size="lg" className="w-full text-base font-semibold rounded-full">
-            Add to Meal Plan
-          </Button>
-
-          <p className="text-sm text-muted-foreground">
-            You can customize this meal in your subscription preferences.
-          </p>
         </div>
       </div>
     </section>
