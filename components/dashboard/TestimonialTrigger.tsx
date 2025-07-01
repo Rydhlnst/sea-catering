@@ -13,13 +13,13 @@ import {
 import { MessageSquarePlus } from "lucide-react";
 import { TestimonialForm } from "./TestimonialForm";
 
-// Komponen ini menerima subscriptionId
+// This component receives the subscriptionId
 interface TestimonialTriggerProps {
   subscriptionId: string;
 }
 
 export function TestimonialTrigger({ subscriptionId }: TestimonialTriggerProps) {
-  // State untuk mengontrol dialog agar bisa ditutup dari dalam form
+  // State to control dialog visibility and allow it to close from inside the form
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,19 +27,19 @@ export function TestimonialTrigger({ subscriptionId }: TestimonialTriggerProps) 
       <DialogTrigger asChild>
         <Button variant="outline">
           <MessageSquarePlus className="mr-2 h-4 w-4" />
-          Beri Testimoni
+          Leave a Testimonial
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Bagikan Pengalaman Anda</DialogTitle>
+          <DialogTitle>Share Your Experience</DialogTitle>
           <DialogDescription>
-            Ulasan Anda sangat berarti untuk membantu kami berkembang.
+            Your feedback helps us grow and improve our service.
           </DialogDescription>
         </DialogHeader>
         <TestimonialForm
           subscriptionId={subscriptionId}
-          onSuccess={() => setOpen(false)} // Menutup dialog setelah berhasil
+          onSuccess={() => setOpen(false)} // Close dialog after success
         />
       </DialogContent>
     </Dialog>
