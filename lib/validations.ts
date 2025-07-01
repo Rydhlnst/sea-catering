@@ -8,7 +8,7 @@ export const UserSchema = z.object({
     .string()
     .min(8, { message: "Phone number is too short" })
     .max(15, { message: "Phone number is too long" })
-    .regex(/^[0-9]+$/, { message: "Phone number must contain only digits" }),
+    .regex(/^[0-9]+$/, { message: "Phone number must contain only digits" }).optional(),
   email: z.string().email({ message: "Invalid email" }).optional(),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }).optional(),
   provider: z.enum(["credentials", "google"]).default("credentials"),
@@ -74,7 +74,7 @@ export const SignUpSchema = z.object({
     .string()
     .min(8, { message: "Phone number is too short" })
     .max(15, { message: "Phone number is too long" })
-    .regex(/^[0-9]+$/, { message: "Phone number must contain only digits" }),
+    .regex(/^[0-9]+$/, { message: "Phone number must contain only digits" }).optional(),
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 })
@@ -100,7 +100,7 @@ export const subscriptionSchema = z.object({
   phoneNumber: z
     .string()
     .min(10, { message: "Phone number too short" })
-    .max(15, { message: "Phone number too long" }),
+    .max(15, { message: "Phone number too long" }).optional(),
   plan: z.enum(["diet", "protein", "royal"]),
   mealTypes: z.array(z.enum(["breakfast", "lunch", "dinner"])).min(1, {
     message: "Select at least one meal type",

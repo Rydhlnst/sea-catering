@@ -3,7 +3,7 @@ import { Schema, models, model, Document, Types } from "mongoose";
 export interface IUser {
   name: string;
   username: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   email?: string;
   image?: string;
   subscriptions?: Types.ObjectId[];
@@ -21,7 +21,7 @@ const UserSchema = new Schema<IUser>(
     name: { type: String, required: true },
     image: { type: String },
     username: { type: String, required: true, unique: true },
-    phoneNumber: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, required: false, unique: true,  },
     email: { type: String, unique: true, sparse: true },
     role: {
       type: String,
