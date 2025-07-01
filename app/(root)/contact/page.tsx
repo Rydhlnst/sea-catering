@@ -24,13 +24,13 @@ export default function ContactSection() {
     {
       title: "Phone",
       description: "Available Monday to Friday, 9AM - 5PM (WIB).",
-      value: "+62 812-7144-2601",
+      value: "+62 812-3456-789",
       icon: <Phone className="text-primary w-5 h-5" />,
     },
   ]
 
   return (
-    <section className="py-20 bg-background max-w-7xl min-h-screen mx-auto flex items-center justify-center">
+    <section className="py-32 md:py-20 bg-background max-w-7xl min-h-screen mx-auto flex items-center justify-center">
       <div className="container max-w-7xl mx-auto px-4 flex flex-col gap-12">
         {/* Header Section */}
         <div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { EnvelopeSimple, MapPin, Phone } from "@phosphor-icons/react"
+import Link from "next/link"
 
 const ContactSection = () => {
   return (
@@ -50,12 +51,17 @@ const ContactSection = () => {
             <p className="mb-3 text-muted-foreground">
               Available Monday to Friday, 9AM - 5PM (WIB).
             </p>
-            <a
+            <Link
               href="tel:081271442601"
               className="font-semibold hover:underline"
             >
-              +62 812-7144-2601
-            </a>
+              <div className="flex flex-row gap-3">
+                <p>Brian</p>
+                <p>
+                  +62 812-3456-789 
+                </p>
+              </div>
+            </Link>
           </div>
         </div>
       </div>

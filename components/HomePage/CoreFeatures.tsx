@@ -55,7 +55,7 @@ const CoreFeatureSection = ({
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         {/* Heading */}
         <div className="mb-24 flex flex-col items-center gap-6">
-          <h1 className="text-center text-3xl font-semibold lg:max-w-3xl lg:text-5xl">
+          <h1 className="text-center text-3xl font-semibold lg:max-w-3xl md:text-4xl">
             {heading}
           </h1>
           <p className="text-center text-lg font-medium text-muted-foreground md:max-w-4xl lg:text-xl">

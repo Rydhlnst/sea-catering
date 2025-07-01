@@ -52,7 +52,7 @@ export const menuData: MenuItem[] = [
   {
     id: "grilled-chicken-salad",
     name: "Grilled Chicken Salad",
-    image: "/grilled-chicken-salad.jpg",
+    image: "/grilledchicken.jpg",
     ingredients: [
       "Grilled Chicken Breast",
       "Romaine Lettuce",
@@ -74,7 +74,7 @@ export const menuData: MenuItem[] = [
   {
     id: "salmon-teriyaki-bowl",
     name: "Salmon Teriyaki Bowl",
-    image: "/salmon-teriyaki-bowl.jpg",
+    image: "/SalmonTeriyaki.jpg",
     ingredients: [
       "Salmon Fillet",
       "Brown Rice",
@@ -116,7 +116,6 @@ export const menuData: MenuItem[] = [
       fat: 12,
     },
   },
-  // --- DATA BARU DITAMBAHKAN DI BAWAH INI ---
   {
     id: "hearty-goulash",
     name: "Hearty Goulash",

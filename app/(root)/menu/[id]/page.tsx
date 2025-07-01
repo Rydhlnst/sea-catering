@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation'
 import { menuData } from '@/lib/data' 
 import ProductDetailSection from '@/components/ProductDetailSection'
 import Image from 'next/image'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 const MenuDetailPage = () => {
   // 1. Ambil parameter dari URL
@@ -33,11 +35,11 @@ const MenuDetailPage = () => {
             </p>
           </div>
           
-          <a href="/menu">
-              <button className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          <Link href="/menu">
+              <Button className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
                   Kembali ke Menu
-              </button>
-          </a>
+              </Button>
+          </Link>
         </div>
       </div>
     );

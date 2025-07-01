@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // Import usePathname
 import { signIn, signOut, useSession } from "next-auth/react";
 import {
-  BookOpenText,
   Carrot,
   List,
-  SunDim,
   Tree,
   SignOut,
 } from "@phosphor-icons/react";
@@ -17,6 +16,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTrigger,
+  SheetClose, // Import SheetClose for mobile nav links
 } from "@/components/ui/sheet";
 import {
   NavigationMenu,
@@ -41,32 +41,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Menu Utama
+// Menu data remains the same
 const menu = [
   { title: "Home", url: "/" },
   { title: "Menu", url: "/menu" },
   { title: "Subscription", url: "/subscription" },
   {
     title: "About",
-    url: "#",
+    url: "#", // Parent URL, not a direct link
     items: [
       {
         title: "Our Story",
         description: "Learn more about SEA Catering’s mission and vision.",
         icon: <Tree size={20} />,
         url: "/about",
-      },
-      {
-        title: "Nutritional Info",
-        description: "Detailed nutrition data for each meal plan.",
-        icon: <BookOpenText size={20} />,
-        url: "/nutrition",
-      },
-      {
-        title: "Testimonials",
-        description: "What our happy customers have to say.",
-        icon: <SunDim size={20} />,
-        url: "/testimonials",
       },
     ],
   },
@@ -78,20 +66,18 @@ const auth = {
   signup: { title: "Sign Up", url: "/sign-up" },
 };
 
-// Helper
+// Helper function remains the same
 const getInitials = (name: string) => {
   const names = name.trim().split(" ");
   if (names.length === 1) return names[0].slice(0, 2).toUpperCase();
   return (names[0][0] + names[1][0]).toUpperCase();
 };
 
-
-
 // Navbar Component
 const Navbar = () => {
   const { data: session } = useSession();
-
   const user = session?.user;
+  const pathname = usePathname(); // Get the current path
 
   return (
     <div className="absolute top-0 left-0 right-0">
@@ -109,10 +95,18 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <NavigationMenu className="hidden lg:block">
             <NavigationMenuList>
-              {menu.map((item) =>
-                item.items ? (
+              {menu.map((item) => {
+                // Check if any sub-item is active for the parent trigger
+                const isParentActive =
+                  item.items?.some((subItem) => pathname === subItem.url) ?? false;
+
+                return item.items ? (
                   <NavigationMenuItem key={item.title}>
-                    <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
+                    <NavigationMenuTrigger
+                      className={`${navigationMenuTriggerStyle()} bg-transparent ${
+                        isParentActive ? "font-bold text-primary" : ""
+                      }`}
+                    >
                       {item.title}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -125,9 +119,7 @@ const Navbar = () => {
                             >
                               <div className="text-primary">{subItem.icon}</div>
                               <div>
-                                <div className="font-semibold">
-                                  {subItem.title}
-                                </div>
+                                <div className="font-semibold">{subItem.title}</div>
                                 <p className="text-sm text-muted-foreground">
                                   {subItem.description}
                                 </p>
@@ -140,20 +132,25 @@ const Navbar = () => {
                   </NavigationMenuItem>
                 ) : (
                   <NavigationMenuItem key={item.title}>
-                    <NavigationMenuLink
-                      asChild
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      <Link href={item.url}>{item.title}</Link>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href={item.url}
+                        className={`${navigationMenuTriggerStyle()} bg-transparent ${
+                          pathname === item.url ? "font-bold text-primary" : ""
+                        }`}
+                      >
+                        {item.title}
+                      </Link>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
-                )
-              )}
+                );
+              })}
             </NavigationMenuList>
           </NavigationMenu>
 
           {/* Right-side buttons / Avatar */}
           <div className="flex items-center gap-3">
+            {/* User Avatar/Login buttons remain the same */}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -167,12 +164,8 @@ const Navbar = () => {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {user.name}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
-                      </p>
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -204,17 +197,48 @@ const Navbar = () => {
                 <SheetContent side="top" className="pt-0 pb-0 overflow-y-auto h-screen">
                   <SheetHeader className="px-6 py-5 border-b border-border/50" />
                   <div className="flex flex-col h-full">
-                    <div className="px-6 py-6 space-y-4 flex-grow">
-
+                    {/* MODIFICATION: Added mobile menu items with active state */}
+                    <div className="px-6 py-6 space-y-2 flex-grow">
+                      {menu.map((item) =>
+                        item.items ? (
+                          <div key={item.title}>
+                            <h4 className="font-semibold text-muted-foreground mb-2 mt-4 px-4">
+                              {item.title}
+                            </h4>
+                            {item.items.map((subItem) => (
+                              <SheetClose asChild key={subItem.title}>
+                                <Link
+                                  href={subItem.url}
+                                  className={`flex items-center gap-3 rounded-lg px-4 py-3 text-lg transition-colors hover:bg-muted ${
+                                    pathname === subItem.url ? "font-bold text-primary bg-muted" : ""
+                                  }`}
+                                >
+                                  {subItem.icon} {subItem.title}
+                                </Link>
+                              </SheetClose>
+                            ))}
+                          </div>
+                        ) : (
+                          <SheetClose asChild key={item.title}>
+                            <Link
+                              href={item.url}
+                              className={`flex items-center rounded-lg px-4 py-3 text-lg transition-colors hover:bg-muted ${
+                                pathname === item.url ? "font-bold text-primary bg-muted" : ""
+                              }`}
+                            >
+                              {item.title}
+                            </Link>
+                          </SheetClose>
+                        )
+                      )}
                     </div>
+                    {/* User info in mobile menu remains the same */}
                     <div className="px-6 py-6 space-y-3 border-t border-border/50">
                       {user ? (
                         <div className="flex items-center gap-4">
                           <Avatar>
                             <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
-                            <AvatarFallback>
-                              {getInitials(user.name ?? "U")}
-                            </AvatarFallback>
+                            <AvatarFallback>{getInitials(user.name ?? "U")}</AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col">
                             <span className="font-semibold">{user.name}</span>
@@ -229,19 +253,16 @@ const Navbar = () => {
                         </div>
                       ) : (
                         <>
-                          <Button
-                            asChild
-                            variant="outline"
-                            className="w-full rounded-full h-12 text-base"
-                          >
-                            <Link href={auth.login.url}>{auth.login.title}</Link>
-                          </Button>
-                          <Button
-                            asChild
-                            className="w-full rounded-full h-12 text-base"
-                          >
-                            <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                          </Button>
+                          <SheetClose asChild>
+                            <Button asChild variant="outline" className="w-full rounded-full h-12 text-base">
+                              <Link href={auth.login.url}>{auth.login.title}</Link>
+                            </Button>
+                          </SheetClose>
+                          <SheetClose asChild>
+                            <Button asChild className="w-full rounded-full h-12 text-base">
+                              <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                            </Button>
+                          </SheetClose>
                         </>
                       )}
                     </div>

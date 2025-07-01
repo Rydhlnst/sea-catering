@@ -1,115 +1,86 @@
-"use client"
+"use client";
 
-// import { Check } from "lucide-react"
-// import { useState } from "react"
-
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-// import { Label } from "@/components/ui/label"
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Separator } from "@/components/ui/separator"
-import { Check } from "phosphor-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Check } from "phosphor-react";
 
 const PricingSection = () => {
-//   const [isPerMonth, setIsPerMonth] = useState(false)
-
   return (
-    <section className="py-20 min-h-screen flex items-center justify-center max-w-7xl mx-auto">
-      <div className="container">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6">
-          <h2 className="text-4xl font-bold text-pretty lg:text-6xl">
+    <section className="py-32 md:pb-20 md:pt-32 px-4 md:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Heading */}
+        <div className="mx-auto mb-10 max-w-4xl text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mb-4">
             Plan Selection
           </h2>
-          <div className="flex flex-col justify-between gap-10 md:flex-row">
-            <p className="max-w-3xl text-muted-foreground lg:text-xl">
-              Pilih paket makanan yang sesuai dengan kebutuhanmu. Semua paket dapat disesuaikan untuk pagi, siang, atau malam, dan dikirim langsung ke tempatmu!
-            </p>
-          </div>
+          <p className="text-muted-foreground text-base sm:text-lg">
+            Pilih paket makanan yang sesuai dengan kebutuhanmu. Semua paket dapat disesuaikan
+            untuk pagi, siang, atau malam, dan dikirim langsung ke tempatmu!
+          </p>
+        </div>
 
-          <div className="flex w-full flex-col items-stretch gap-6 md:flex-row">
-            {/* Diet Plan */}
-            <div className="flex w-full flex-col rounded-lg border p-6 text-left">
-              <Badge className="mb-8 block w-fit">Diet Plan</Badge>
-              <span className="text-3xl font-semibold">Rp30.000</span>
-              <p className="text-muted-foreground">per meal</p>
-              <Separator className="my-6" />
-              <div className="flex flex-col justify-between gap-20">
-                <ul className="space-y-4 text-muted-foreground text-sm">
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Kandungan kalori terkontrol (≤ 500 kcal)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Cocok untuk program penurunan berat badan</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Makanan rendah gula & karbohidrat</span>
-                  </li>
+        {/* Cards */}
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+          {/* Item Template */}
+          {[
+            {
+              title: "Diet Plan",
+              price: "Rp30.000",
+              bg: "bg-background",
+              features: [
+                "Kandungan kalori terkontrol (≤ 500 kcal)",
+                "Cocok untuk program penurunan berat badan",
+                "Makanan rendah gula & karbohidrat",
+              ],
+            },
+            {
+              title: "Protein Plan",
+              price: "Rp40.000",
+              bg: "bg-background",
+              features: [
+                "Tinggi protein (≥ 25g)",
+                "Dukung pertumbuhan & recovery otot",
+                "Cocok untuk gaya hidup aktif & gym",
+              ],
+            },
+            {
+              title: "Royal Plan",
+              price: "Rp60.000",
+              bg: "bg-muted",
+              features: [
+                "Menu eksklusif & premium",
+                "Bahan baku organik & impor",
+                "Disajikan oleh chef profesional",
+                "Cocok untuk event atau luxury needs",
+              ],
+            },
+          ].map((plan) => (
+            <div
+              key={plan.title}
+              className={`flex w-full flex-col rounded-xl border p-6 shadow-sm hover:shadow-md transition ${plan.bg}`}
+            >
+              <Badge className="mb-6 w-fit">{plan.title}</Badge>
+              <span className="text-2xl sm:text-3xl font-semibold">{plan.price}</span>
+              <p className="text-muted-foreground text-sm">per meal</p>
+              <Separator className="my-5" />
+              <div className="flex flex-col justify-between gap-8 sm:gap-16 h-full">
+                <ul className="space-y-4 text-muted-foreground text-sm sm:text-base">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <Check className="size-4 mt-1 text-primary" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
-                <Button className="w-full">Pilih Paket</Button>
+                <Button className="w-full mt-4 sm:mt-0">Pilih Paket</Button>
               </div>
             </div>
-
-            {/* Protein Plan */}
-            <div className="flex w-full flex-col rounded-lg border p-6 text-left">
-              <Badge className="mb-8 block w-fit">Protein Plan</Badge>
-              <span className="text-3xl font-semibold">Rp40.000</span>
-              <p className="text-muted-foreground">per meal</p>
-              <Separator className="my-6" />
-              <div className="flex flex-col justify-between gap-20">
-                <ul className="space-y-4 text-muted-foreground text-sm">
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Tinggi protein (≥ 25g)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Dukung pertumbuhan & recovery otot</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Cocok untuk gaya hidup aktif & gym</span>
-                  </li>
-                </ul>
-                <Button className="w-full">Pilih Paket</Button>
-              </div>
-            </div>
-
-            {/* Royal Plan */}
-            <div className="flex w-full flex-col rounded-lg border bg-muted p-6 text-left">
-              <Badge className="mb-8 block w-fit">Royal Plan</Badge>
-              <span className="text-3xl font-semibold">Rp60.000</span>
-              <p className="text-muted-foreground">per meal</p>
-              <Separator className="my-6" />
-              <div className="flex flex-col justify-between gap-20">
-                <ul className="space-y-4 text-muted-foreground text-sm">
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Menu eksklusif & premium</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Bahan baku organik & impor</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Disajikan oleh chef profesional</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="size-4" />
-                    <span>Cocok untuk event atau luxury needs</span>
-                  </li>
-                </ul>
-                <Button className="w-full">Pilih Paket</Button>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default PricingSection
+export default PricingSection;
