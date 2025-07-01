@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Import usePathname
+import { usePathname } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
 import {
   Carrot,
@@ -16,7 +16,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTrigger,
-  SheetClose, // Import SheetClose for mobile nav links
+  SheetClose,
 } from "@/components/ui/sheet";
 import {
   NavigationMenu,
@@ -48,7 +48,7 @@ const menu = [
   { title: "Subscription", url: "/subscription" },
   {
     title: "About",
-    url: "#", // Parent URL, not a direct link
+    url: "#",
     items: [
       {
         title: "Our Story",
@@ -77,7 +77,7 @@ const getInitials = (name: string) => {
 const Navbar = () => {
   const { data: session } = useSession();
   const user = session?.user;
-  const pathname = usePathname(); // Get the current path
+  const pathname = usePathname();
 
   return (
     <div className="absolute top-0 left-0 right-0">

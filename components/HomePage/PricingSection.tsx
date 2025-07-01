@@ -9,29 +9,28 @@ const PricingSection = () => {
   return (
     <section className="py-32 md:pb-20 md:pt-32 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Heading */}
+        {/* Section Heading */}
         <div className="mx-auto mb-10 max-w-4xl text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mb-4">
             Plan Selection
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg">
-            Pilih paket makanan yang sesuai dengan kebutuhanmu. Semua paket dapat disesuaikan
-            untuk pagi, siang, atau malam, dan dikirim langsung ke tempatmu!
+            Choose the meal package that suits your needs. All plans are customizable for breakfast, lunch, or dinner and delivered right to your place!
           </p>
         </div>
 
-        {/* Cards */}
+        {/* Pricing Cards */}
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-          {/* Item Template */}
+          {/* Plan Item Template */}
           {[
             {
               title: "Diet Plan",
               price: "Rp30.000",
               bg: "bg-background",
               features: [
-                "Kandungan kalori terkontrol (≤ 500 kcal)",
-                "Cocok untuk program penurunan berat badan",
-                "Makanan rendah gula & karbohidrat",
+                "Controlled calories (≤ 500 kcal)",
+                "Ideal for weight loss programs",
+                "Low in sugar & carbs",
               ],
             },
             {
@@ -39,9 +38,9 @@ const PricingSection = () => {
               price: "Rp40.000",
               bg: "bg-background",
               features: [
-                "Tinggi protein (≥ 25g)",
-                "Dukung pertumbuhan & recovery otot",
-                "Cocok untuk gaya hidup aktif & gym",
+                "High protein (≥ 25g)",
+                "Supports muscle growth & recovery",
+                "Great for active lifestyles & gym-goers",
               ],
             },
             {
@@ -49,10 +48,10 @@ const PricingSection = () => {
               price: "Rp60.000",
               bg: "bg-muted",
               features: [
-                "Menu eksklusif & premium",
-                "Bahan baku organik & impor",
-                "Disajikan oleh chef profesional",
-                "Cocok untuk event atau luxury needs",
+                "Premium & exclusive menu",
+                "Organic & imported ingredients",
+                "Served by professional chefs",
+                "Perfect for events or luxury needs",
               ],
             },
           ].map((plan) => (
@@ -73,7 +72,7 @@ const PricingSection = () => {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full mt-4 sm:mt-0">Pilih Paket</Button>
+                <Button className="w-full mt-4 sm:mt-0">Choose Plan</Button>
               </div>
             </div>
           ))}

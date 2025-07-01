@@ -8,25 +8,25 @@ import { AdminDashboard } from "@/components/dashboard/admin/admin-dashboard";
 import { NoSubscription } from "@/components/dashboard/no-subscription";
 
 export default async function DashboardPage() {
-  // 1. Cek autentikasi
+  // 1. Check authentication
   const session = await auth();
   if (!session?.user?.email) {
     redirect("/login");
   }
 
-  // 2. Koneksi DB
+  // 2. Connect to the database
   await dbConnect();
 
-  // 3. Cek role admin
+  // 3. Check for admin role
   if (session.user.role === "admin") {
     return (
       <div className="container max-w-7xl px-4 mx-auto py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">
-            Selamat Datang, Admin {session.user.name}!
+            Welcome, Admin {session.user.name}!
           </h1>
           <p className="text-muted-foreground">
-            Lihat statistik dan kelola langganan pelanggan SEA Catering.
+            View statistics and manage customer subscriptions for SEA Catering.
           </p>
         </div>
         <AdminDashboard />
@@ -34,25 +34,24 @@ export default async function DashboardPage() {
     );
   }
 
-  // 4. Ambil user berdasarkan email dari sesi
+  // 4. Find user based on session email
   const user = await User.findOne({ email: session.user.email });
   if (!user) {
-    console.error("User tidak ditemukan untuk email:", session.user.email);
+    console.error("User not found for email:", session.user.email);
     return <NoSubscription />;
   }
 
-  // 5. Ambil langganan berdasarkan user._id
+  // 5. Find subscription by user._id and populate the associated plan
   const subscription = await Subscription.findOne({ user: user._id }).populate("plan");
-
 
   return (
     <div className="container max-w-7xl px-4 mx-auto py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Selamat Datang, {session.user.name}!
+          Welcome, {session.user.name}!
         </h1>
         <p className="text-muted-foreground">
-          Kelola informasi langganan katering Anda di sini.
+          Manage your catering subscription information here.
         </p>
       </div>
 

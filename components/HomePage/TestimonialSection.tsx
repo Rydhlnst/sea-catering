@@ -13,6 +13,7 @@ interface Testimonial {
   avatarSrc?: string
 }
 
+// Loading placeholder while data is being fetched
 const TestimonialCardSkeleton = () => (
   <Card className="bg-card text-card-foreground shadow-lg rounded-lg">
     <CardContent className="p-6">
@@ -35,19 +36,20 @@ export default function TestimonialsSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Fetch testimonial data from API on mount
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
         const response = await fetch("/api/testimonials")
         if (!response.ok) {
-          throw new Error("Gagal mengambil testimoni.")
+          throw new Error("Failed to fetch testimonials.")
         }
 
         const data = await response.json()
         setTestimonials(data)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
-        setError(err.message || "Terjadi kesalahan saat mengambil data.")
+        setError(err.message || "An error occurred while fetching data.")
       } finally {
         setIsLoading(false)
       }
@@ -58,25 +60,33 @@ export default function TestimonialsSection() {
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+      {/* Section Header */}
       <div className="container mx-auto max-w-6xl text-center">
         <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-2">
           Testimonials
         </h3>
         <h2 className="text-4xl font-bold text-foreground mb-4">
-          Apa Kata Klien Kami?
+          What Our Clients Say
         </h2>
         <p className="text-lg text-muted-foreground mb-12">
-          Lebih dari 1000+ klien puas memercayakan makanan sehat harian mereka kepada SEA Catering.
+          Over 1,000 clients trust SEA Catering to provide their healthy daily meals with satisfaction.
         </p>
 
+        {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <TestimonialCardSkeleton key={i} />)
+            // Show skeletons while loading
+            Array.from({ length: 3 }).map((_, i) => (
+              <TestimonialCardSkeleton key={i} />
+            ))
           ) : error ? (
+            // Display error message
             <p className="col-span-3 text-destructive text-center">{error}</p>
           ) : testimonials.length === 0 ? (
-            <p className="col-span-3 text-muted-foreground">Belum ada testimoni tersedia.</p>
+            // Empty state
+            <p className="col-span-3 text-muted-foreground">No testimonials available.</p>
           ) : (
+            // Map and display testimonial cards
             testimonials.map(({ id, quote, author, title, avatarSrc }) => (
               <Card
                 key={id}

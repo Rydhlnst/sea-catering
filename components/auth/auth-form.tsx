@@ -1,13 +1,19 @@
 "use client";
 
-import { useForm, Path, SubmitHandler, DefaultValues, FieldValues } from "react-hook-form";
+import {
+  useForm,
+  Path,
+  SubmitHandler,
+  DefaultValues,
+  FieldValues,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z, ZodTypeAny } from "zod";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // Assuming sonner for toasts, as in the first example
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-// Define a type for your action response for consistency, similar to the first example
+// For handling form response consistently
 interface ActionResponse {
   success: boolean;
   status?: number;
@@ -30,13 +36,14 @@ interface ActionResponse {
   };
 }
 
+// Props for reusable AuthForm
 interface AuthFormProps<T extends FieldValues> {
   className?: string;
   image?: string;
-  schema: ZodTypeAny; // Change ZodType<T> to ZodSchema<T>
-  defaultValues: T,
-  formType: "SIGN_IN" | "SIGN_UP"
-  onSubmit: (data: T) => Promise<ActionResponse>,
+  schema: ZodTypeAny;
+  defaultValues: T;
+  formType: "SIGN_IN" | "SIGN_UP";
+  onSubmit: (data: T) => Promise<ActionResponse>;
 }
 
 export function AuthForm<T extends FieldValues>({
@@ -58,24 +65,32 @@ export function AuthForm<T extends FieldValues>({
     throw new Error("Zod schema is required in <AuthForm />");
   }
 
+  // Form submit handler
   const handleSubmit: SubmitHandler<T> = async (data) => {
     const result = (await onSubmit(data)) as ActionResponse;
 
     if (result?.success) {
       toast("Success", {
-        description: formType === "SIGN_IN" ? "Signed in successfully" : "Signed up successfully",
+        description:
+          formType === "SIGN_IN"
+            ? "Signed in successfully"
+            : "Signed up successfully",
       });
-      router.push("/"); // Assuming home route is "/" for this example
+      router.push("/");
     } else {
       toast(`Error ${result?.status || ""}`, {
-        description: result?.error?.message || "An unexpected error occurred.",
+        description:
+          result?.error?.message || "An unexpected error occurred.",
       });
     }
   };
 
+  // Dynamic labels
   const title = formType === "SIGN_IN" ? "Welcome back" : "Create an account";
   const description =
-    formType === "SIGN_IN" ? "Login to your account" : "Start your journey with us";
+    formType === "SIGN_IN"
+      ? "Log in to your account"
+      : "Start your journey with us";
   const buttonText = formType === "SIGN_IN" ? "Sign In" : "Sign Up";
 
   return (
@@ -83,13 +98,18 @@ export function AuthForm<T extends FieldValues>({
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <Form {...form}>
-            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(handleSubmit)}>
+            <form
+              className="p-6 md:p-8"
+              onSubmit={form.handleSubmit(handleSubmit)}
+            >
               <div className="flex flex-col gap-6">
+                {/* Form heading */}
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">{title}</h1>
                   <p className="text-muted-foreground text-sm">{description}</p>
                 </div>
 
+                {/* Render fields dynamically based on defaultValues */}
                 {Object.keys(defaultValues).map((field) => (
                   <FormField
                     key={field}
@@ -100,12 +120,15 @@ export function AuthForm<T extends FieldValues>({
                         <FormLabel htmlFor={formField.name}>
                           {formField.name === "email"
                             ? "Email Address"
-                            : formField.name.charAt(0).toUpperCase() + formField.name.slice(1)}
+                            : formField.name.charAt(0).toUpperCase() +
+                              formField.name.slice(1)}
                         </FormLabel>
                         <FormControl>
                           <Input
                             id={formField.name}
-                            type={formField.name === "password" ? "password" : "text"}
+                            type={
+                              formField.name === "password" ? "password" : "text"
+                            }
                             placeholder={formField.name}
                             {...formField}
                           />
@@ -116,6 +139,7 @@ export function AuthForm<T extends FieldValues>({
                   />
                 ))}
 
+                {/* Submit Button */}
                 <Button
                   type="submit"
                   className="w-full"
@@ -128,12 +152,14 @@ export function AuthForm<T extends FieldValues>({
                     : buttonText}
                 </Button>
 
+                {/* Separator for OAuth */}
                 <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
                   <span className="bg-card text-muted-foreground relative z-10 px-2">
                     Or continue with
                   </span>
                 </div>
 
+                {/* Google OAuth Button */}
                 <Button
                   type="button"
                   variant="outline"
@@ -153,6 +179,7 @@ export function AuthForm<T extends FieldValues>({
                   Continue with Google
                 </Button>
 
+                {/* Auth links */}
                 <div className="text-center text-sm">
                   {formType === "SIGN_IN" ? (
                     <>
@@ -180,24 +207,32 @@ export function AuthForm<T extends FieldValues>({
             </form>
           </Form>
 
+          {/* Side image on larger screens */}
           <div className="bg-muted relative hidden md:block">
             <Image
               fill
               src={image}
-              alt="Auth Image"
+              alt="Auth Illustration"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
           </div>
         </CardContent>
       </Card>
 
+      {/* Terms and policy disclaimer */}
       <p className="text-muted-foreground text-center text-xs text-balance">
         By clicking continue, you agree to our{" "}
-        <Link href="#" className="underline underline-offset-4 hover:text-primary">
+        <Link
+          href="#"
+          className="underline underline-offset-4 hover:text-primary"
+        >
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="#" className="underline underline-offset-4 hover:text-primary">
+        <Link
+          href="#"
+          className="underline underline-offset-4 hover:text-primary"
+        >
           Privacy Policy
         </Link>
         .

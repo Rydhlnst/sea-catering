@@ -27,7 +27,7 @@ export interface ISubscriptionDoc extends ISubscription, Document {}
 const SubscriptionSchema = new Schema<ISubscriptionDoc>(
   {
     user: {
-      type: Schema.Types.ObjectId, // UUID
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
       unique: true,

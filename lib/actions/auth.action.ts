@@ -2,9 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-
 import { signIn } from "@/auth";
-
 import action from "../handlers/action";
 import handleError from "../handlers/error";
 import { SignInSchema, SignUpSchema } from "../validations";
@@ -14,19 +12,22 @@ import User from "@/models/User.model";
 import Account from "@/models/Account.model";
 
 const DASHBOARD_URL = "/dashboard";
-
 type SignUpParams = AuthCredentials & { callbackUrl?: string };
 type SignInParams = Pick<AuthCredentials, "email" | "password"> & { callbackUrl?: string };
 
 /**
- * Mendaftarkan pengguna baru dengan kredensial.
- * Menggunakan transaksi database untuk memastikan integritas data.
- * Otomatis login setelah pendaftaran berhasil.
+ * Registers a new user using credentials.
+ * - Validates input using Zod
+ * - Checks for uniqueness of email, username, and phone number
+ * - Creates both User and Account documents in a transaction
+ * - Automatically signs in the user upon success
  */
 export async function signUpWithCredentials(
   params: SignUpParams
 ): Promise<ActionResponse> {
   const { callbackUrl, ...credentials } = params;
+
+  // Step 1: Validate input with schema
   const validationResult = await action({
     params: credentials,
     schema: SignUpSchema,
@@ -39,28 +40,32 @@ export async function signUpWithCredentials(
   const { name, username, email, password, phoneNumber } =
     validationResult.params!;
 
+  // Step 2: Start a MongoDB session for transaction
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Validasi data unik di dalam transaksi
+    // Step 3: Check for existing user by email, username, or phone number
     const existingUser = await User.findOne({ 
         $or: [{ email }, { username }, { phoneNumber }] 
     }).session(session);
 
     if (existingUser) {
-      if (existingUser.email === email) throw new Error("Email ini sudah terdaftar.");
-      if (existingUser.username === username) throw new Error("Username ini sudah digunakan.");
-      if (existingUser.phoneNumber === phoneNumber) throw new Error("Nomor telepon ini sudah digunakan.");
+      if (existingUser.email === email) throw new Error("This email is already registered.");
+      if (existingUser.username === username) throw new Error("This username is already taken.");
+      if (existingUser.phoneNumber === phoneNumber) throw new Error("This phone number is already used.");
     }
 
+    // Step 4: Hash password using bcrypt
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Step 5: Create User document
     const [newUser] = await User.create(
       [{ username, name, email, phoneNumber }],
       { session }
     );
 
+    // Step 6: Create corresponding Account for authentication
     await Account.create(
       [
         {
@@ -74,47 +79,50 @@ export async function signUpWithCredentials(
       { session }
     );
 
-    // Commit transaksi untuk menyimpan pengguna ke DB secara permanen
+    // Step 7: Commit the transaction
     await session.commitTransaction();
 
-    // Panggil signIn untuk otomatis login.
-    // signIn akan melempar error redirect khusus jika berhasil, yang akan ditangkap di bawah.
+    // Step 8: Automatically sign in the user after successful registration
     await signIn("credentials", {
       email,
       password,
       redirectTo: callbackUrl || DASHBOARD_URL,
     });
 
-    // Baris ini secara teknis tidak akan pernah tercapai karena `signIn` akan melempar error.
+    // This line is technically never reached because signIn throws a redirect
     return { success: true };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
+    // Rollback transaction if an error occurs
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
 
-    // Jika error berasal dari `signIn`, itu adalah error redirect yang valid.
-    // Biarkan Next.js yang menanganinya dengan melemparnya kembali.
+    // Pass through redirect errors triggered by signIn
     if (error.message?.includes("NEXT_REDIRECT")) {
       throw error;
     }
-    
-    // Untuk semua error lain (misal: "Email sudah terdaftar"), format dengan handler.
+
+    // For all other errors (e.g., validation), format with custom error handler
     return handleError(error) as ErrorResponse;
   } finally {
-    // Pastikan sesi selalu ditutup untuk mencegah kebocoran koneksi.
+    // Always end the session to prevent connection leaks
     await session.endSession();
   }
 }
 
 /**
- * Memproses login pengguna dengan kredensial.
- * Fungsi ini mendelegasikan semua logika otentikasi ke fungsi 'authorize' di auth.ts.
+ * Handles login process using user credentials.
+ * - Validates input with schema
+ * - Delegates login logic to the `authorize` function defined in `auth.ts`
+ * - Handles redirect and error responses
  */
 export async function signInWithCredentials(
   params: SignInParams
 ): Promise<ActionResponse> {
   const { callbackUrl, ...credentials } = params;
+
+  // Step 1: Validate email and password with schema
   const validationResult = await action({
     params: credentials,
     schema: SignInSchema,
@@ -127,10 +135,8 @@ export async function signInWithCredentials(
   const { email, password } = validationResult.params!;
 
   try {
-    // 💡 PERBAIKAN: Langsung panggil signIn.
-    // Tidak perlu lagi memeriksa user, account, atau password di sini.
-    // Semua logika itu seharusnya sudah ada di dalam fungsi 'authorize' di auth.ts.
-    // Ini membuat 'authorize' sebagai satu-satunya sumber kebenaran untuk login.
+    // Step 2: Delegate authentication to NextAuth signIn function
+    // All logic (user lookup, password check) is handled inside the custom `authorize`
     await signIn("credentials", {
       email,
       password,
@@ -140,14 +146,12 @@ export async function signInWithCredentials(
     return { success: true };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    // Sama seperti signUp, tangani error redirect dari signIn.
-    // Error lain (seperti 'CredentialsSignin' yang dilempar dari 'authorize') 
-    // akan ditangani di sini dan diformat oleh handleError.
+    // Allow NEXT_REDIRECT errors to propagate
     if (error.message?.includes("NEXT_REDIRECT")) {
       throw error;
     }
 
-    // `handleError` akan menangkap error `CredentialsSignin` dan mengambil pesan yang relevan.
+    // Handle authentication failures and other issues
     return handleError(error) as ErrorResponse;
   }
 }

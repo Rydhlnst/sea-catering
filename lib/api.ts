@@ -40,6 +40,7 @@ export const api = {
     delete: (id: string) =>
       fetchHandler(`${API_BASE_URL}/users/${id}`, { method: "DELETE" }),
   },
+  // Ga kepake sih
   accounts: {
     getAll: () => fetchHandler(`${API_BASE_URL}/accounts`),
     getById: (id: string) => fetchHandler(`${API_BASE_URL}/accounts/${id}`),
