@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
   Carrot,
   List,
@@ -40,6 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Gauge } from "phosphor-react";
 
 // Menu data remains the same
 const menu = [
@@ -63,7 +64,7 @@ const menu = [
 
 const auth = {
   login: { title: "Log In", url: "/login" },
-  signup: { title: "Sign Up", url: "/sign-up" },
+  signup: { title: "Sign Up", url: "/register" },
 };
 
 // Helper function remains the same
@@ -169,6 +170,11 @@ const Navbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Gauge className="mr-2 h-4 w-4" />
+                    <Link href={"/dashboard"}>Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()}>
                     <SignOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
@@ -180,8 +186,8 @@ const Navbar = () => {
                 <Button variant="outline" className="hidden sm:inline-flex rounded-full">
                   <Link href={auth.login.url}>{auth.login.title}</Link>
                 </Button>
-                <Button className="rounded-full" onClick={() => signIn()}>
-                  {auth.signup.title}
+                <Button className="rounded-full">
+                  <Link href={auth.signup.url}>{auth.signup.title}</Link>
                 </Button>
               </>
             )}

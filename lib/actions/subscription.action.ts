@@ -91,3 +91,137 @@ export async function createSubscription(
     };
   }
 }
+
+export async function pauseSubscription(): Promise<ActionResponse> {
+  try {
+    const session = await auth();
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+      return { success: false, error: "You must be logged in." };
+    }
+
+    await dbConnect();
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return { success: false, error: "User not found." };
+    }
+
+    const subscription = await Subscription.findOne({
+      user: user._id,
+      status: "active",
+    });
+
+    if (!subscription) {
+      return { success: false, error: "No active subscription found." };
+    }
+
+    subscription.status = "paused";
+    subscription.pausedAt = new Date();
+    await subscription.save();
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("pauseSubscription error:", error);
+    return {
+      success: false,
+      error: "Failed to pause the subscription. Please try again.",
+    };
+  }
+}
+
+export async function cancelSubscription(): Promise<ActionResponse> {
+  try {
+    const session = await auth();
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+      return { success: false, error: "You must be logged in." };
+    }
+
+    await dbConnect();
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return { success: false, error: "User not found." };
+    }
+
+    const subscription = await Subscription.findOne({
+      user: user._id,
+      status: { $in: ["active", "paused"] },
+    });
+
+    if (!subscription) {
+      return { success: false, error: "No subscription found to cancel." };
+    }
+
+    // Step 1: Mark as cancelled
+    subscription.status = "cancelled";
+    subscription.cancelledAt = new Date();
+    await subscription.save();
+
+    // Step 2: Remove subscription from user's list (if stored as reference)
+    await User.findByIdAndUpdate(user._id, {
+      $pull: { subscriptions: subscription._id },
+    });
+
+    // Step 3: Delete the subscription document from DB
+    await Subscription.deleteOne({ _id: subscription._id });
+
+    // Step 4: Revalidate dashboard page
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("cancelSubscription error:", error);
+    return {
+      success: false,
+      error: "Failed to cancel the subscription. Please try again.",
+    };
+  }
+}
+
+export async function resumeSubscription(): Promise<ActionResponse> {
+  try {
+    const session = await auth();
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+      return { success: false, error: "You must be logged in." };
+    }
+
+    await dbConnect();
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return { success: false, error: "User not found." };
+    }
+
+    const subscription = await Subscription.findOne({
+      user: user._id,
+      status: "paused",
+    });
+
+    if (!subscription) {
+      return {
+        success: false,
+        error: "No paused subscription found to resume.",
+      };
+    }
+
+    subscription.status = "active";
+    subscription.updatedAt = new Date();
+    await subscription.save();
+
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("resumeSubscription error:", error);
+    return {
+      success: false,
+      error: "Failed to resume the subscription. Please try again.",
+    };
+  }
+}

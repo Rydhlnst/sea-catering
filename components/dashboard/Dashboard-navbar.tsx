@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 import { Chat, Layout, SignOut } from "phosphor-react";
 
 const navItems = [
-  { href: "/dashboard", label: "Beranda", icon: Layout },
+  { href: "/dashboard", label: "Dashboard", icon: Layout },
 ];
 
 export function DashboardNavbar() {
@@ -51,7 +51,7 @@ export function DashboardNavbar() {
                 )}
               >
                 <Chat className="h-4 w-4" />
-                <span className="hidden md:inline">Testimoni</span>
+                <span className="hidden md:inline">Testimonial</span>
               </Link>
             )}
 

@@ -4,18 +4,21 @@ import { useEffect, useState } from "react";
 import { subDays, format } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { getAdminStats } from "@/lib/actions/admin.action";
+
+// UI Components
 import { DateRangePicker } from "@/components/date-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { AddPlanForm } from "./add-plan-form";
 
+// Icons from Phosphor
 import {
-  Users,
-  TrendingUp,
-  RefreshCw,
-  CheckCircle,
-} from "lucide-react";
+  UserPlus,
+  ChartLineUp,
+  ClockClockwise,
+  ShieldCheck,
+} from "phosphor-react";
 
 interface AdminStats {
   newSubscriptions: number;
@@ -24,19 +27,22 @@ interface AdminStats {
   totalActive: number;
 }
 
+// Main Admin Dashboard component
 export function AdminDashboard() {
+  // Date range state for filtering
   const [range, setRange] = useState<DateRange>({
     from: subDays(new Date(), 30),
     to: new Date(),
   });
 
+  // Stats data state
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch statistics on date range change
   useEffect(() => {
     async function fetchStats() {
       if (!range.from || !range.to) return;
-
       setLoading(true);
       try {
         const res = await getAdminStats(range.from, range.to);
@@ -47,86 +53,113 @@ export function AdminDashboard() {
         setLoading(false);
       }
     }
-
     fetchStats();
   }, [range]);
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Statistik Langganan</h2>
-        <p className="text-muted-foreground text-sm">Pantau pertumbuhan pelanggan dan metrik utama</p>
-        <DateRangePicker range={range} setRange={setRange} />
-        {range.from && range.to && (
-          <Badge variant="outline" className="mt-2">
-            {format(range.from, "dd MMM yyyy")} – {format(range.to, "dd MMM yyyy")}
-          </Badge>
-        )}
-      </div>
+    <div className="space-y-8">
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Stats and Date Picker */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Filter Statistics</CardTitle>
+              <div className="flex items-center space-x-2 pt-2">
+                <DateRangePicker range={range} setRange={setRange} />
+                {range.from && range.to && (
+                  <Badge variant="secondary">
+                    {format(range.from, "dd MMM yy")} – {format(range.to, "dd MMM yy")}
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+          </Card>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {loading || !stats ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-[120px] rounded-xl" />
-          ))
-        ) : (
-          <>
-            <StatCard
-              title="Langganan Baru"
-              value={stats.newSubscriptions}
-              icon={<Users className="w-5 h-5 text-primary" />}
-            />
-            <StatCard
-              title="MRR"
-              value={`Rp${stats.mrr.toLocaleString("id-ID")}`}
-              icon={<TrendingUp className="w-5 h-5 text-green-600" />}
-            />
-            <StatCard
-              title="Reaktivasi"
-              value={stats.reactivations}
-              icon={<RefreshCw className="w-5 h-5 text-orange-500" />}
-            />
-            <StatCard
-              title="Total Aktif"
-              value={stats.totalActive}
-              icon={<CheckCircle className="w-5 h-5 text-blue-500" />}
-            />
-          </>
-        )}
-      </div>
+          {/* Statistic Cards */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            {loading || !stats ? (
+              // Skeleton loading while fetching
+              Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-[126px] rounded-xl" />
+              ))
+            ) : (
+              <>
+                <StatCard
+                  title="New Subscriptions"
+                  value={stats.newSubscriptions}
+                  icon={<UserPlus size={24} />}
+                  accentColor="text-blue-500 bg-blue-50"
+                />
+                <StatCard
+                  title="MRR (Monthly Recurring Revenue)"
+                  value={`Rp${stats.mrr.toLocaleString("id-ID")}`}
+                  icon={<ChartLineUp size={24} />}
+                  accentColor="text-green-600 bg-green-50"
+                />
+                <StatCard
+                  title="Reactivations"
+                  value={stats.reactivations}
+                  icon={<ClockClockwise size={24} />}
+                  accentColor="text-orange-500 bg-orange-50"
+                />
+                <StatCard
+                  title="Total Active Subscribers"
+                  value={stats.totalActive}
+                  icon={<ShieldCheck size={24} />}
+                  accentColor="text-indigo-500 bg-indigo-50"
+                />
+              </>
+            )}
+          </div>
+        </div>
 
-      {/* Form Tambah Paket */}
-      <div>
-        <h3 className="text-xl font-semibold">Tambah Paket Baru</h3>
-        <p className="text-sm text-muted-foreground mb-4">Lengkapi detail paket untuk ditampilkan pada laman pelanggan.</p>
-        <AddPlanForm />
+        {/* Right Column: Add New Plan Form */}
+        <div className="lg:col-span-1">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Add New Plan</CardTitle>
+              <p className="text-sm text-muted-foreground pt-1">
+                Create a new subscription plan for customers.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <AddPlanForm />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
 
+// Component: Reusable card to show individual stat block
 function StatCard({
   title,
   value,
   icon,
+  accentColor,
 }: {
   title: string;
   value: string | number;
   icon: React.ReactNode;
+  accentColor: string;
 }) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        {icon}
+    <Card className="hover:shadow-lg transition-shadow duration-300 ease-in-out">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {title}
+            </CardTitle>
+            <div className="text-3xl font-bold">{value}</div>
+          </div>
+          <div className={`p-3 rounded-lg ${accentColor}`}>
+            {icon}
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-semibold">{value}</div>
-      </CardContent>
     </Card>
   );
 }

@@ -3,6 +3,7 @@ import "./globals.css";
 import { Changa_One, Rubik_Mono_One, DM_Sans } from "next/font/google";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/sonner";
 
 const changaOne = Changa_One({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default async function RootLayout({
           className={`${changaOne.variable} ${rubikMono.variable} ${dmSans.variable} antialiased`}
         >
           {children}
+          <Toaster className="text-foreground"/>
         </body>
       </SessionProvider>
     </html>

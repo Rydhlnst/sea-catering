@@ -33,8 +33,11 @@ interface ActionResponse {
   status?: number;
   error?: {
     message: string;
+    name?: string;
+    errors?: Record<string, string[]>; // untuk ValidationError
   };
 }
+
 
 // Props for reusable AuthForm
 interface AuthFormProps<T extends FieldValues> {
@@ -65,25 +68,43 @@ export function AuthForm<T extends FieldValues>({
     throw new Error("Zod schema is required in <AuthForm />");
   }
 
-  // Form submit handler
-  const handleSubmit: SubmitHandler<T> = async (data) => {
-    const result = (await onSubmit(data)) as ActionResponse;
+    // Form submit handler
+    const handleSubmit: SubmitHandler<T> = async (data) => {
+    try {
+      const result = await onSubmit(data);
 
-    if (result?.success) {
-      toast("Success", {
-        description:
-          formType === "SIGN_IN"
-            ? "Signed in successfully"
-            : "Signed up successfully",
-      });
-      router.push("/");
-    } else {
-      toast(`Error ${result?.status || ""}`, {
-        description:
-          result?.error?.message || "An unexpected error occurred.",
+      if (result?.success) {
+        toast("Success", {
+          description:
+            formType === "SIGN_IN"
+              ? "Signed in successfully"
+              : "Signed up successfully",
+        });
+        router.push("/");
+      } else {
+        // Tampilkan pesan dari server
+        if (result?.error?.name === "ValidationError" && result?.error?.errors) {
+          const messages = Object.entries(result.error.errors)
+            .map(([field, errs]) => `${field}: ${errs.join(", ")}`)
+            .join("\n");
+
+          toast.error("Validation Error", {
+            description: messages,
+          });
+        } else {
+          toast.error(result.error?.name ?? "Server Error", {
+            description: result.error?.message || "Unexpected error occurred.",
+          });
+        }
+      }
+    } catch (error) {
+      // Error yang tidak tertangkap sebelumnya
+      toast.error("Unexpected Error", {
+        description: (error as Error).message,
       });
     }
   };
+
 
   // Dynamic labels
   const title = formType === "SIGN_IN" ? "Welcome back" : "Create an account";
@@ -99,8 +120,15 @@ export function AuthForm<T extends FieldValues>({
         <CardContent className="grid p-0 md:grid-cols-2">
           <Form {...form}>
             <form
+              onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                const firstError = Object.values(errors)[0];
+                if (firstError?.message) {
+                  toast.error("Validation Error", {
+                    description: firstError.message.toString(),
+                  });
+                }
+              })}
               className="p-6 md:p-8"
-              onSubmit={form.handleSubmit(handleSubmit)}
             >
               <div className="flex flex-col gap-6">
                 {/* Form heading */}
@@ -163,7 +191,7 @@ export function AuthForm<T extends FieldValues>({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => signIn("google")}
+                  onClick={() => signIn("google", {callbackUrl: "/dashboard"})}
                   className="w-full"
                 >
                   <svg

@@ -41,6 +41,17 @@ export interface SerializedPlan {
   updatedAt: string;
 }
 
+export const SignInWithOAuthSchema = z.object({
+    provider: z.enum(['google']),
+    providerAccountId: z.string().min(1, {message: "Provider Account ID is required"}),
+    user: z.object({
+        name: z.string().min(1, {message: "Name is required"}),
+        username: z.string().min(3, {message: "Username must be at least 3 characters long"}),
+        email: z.string().email({message: "Please provide a valid email address"}),
+        image: z.string().url("Invalid image URL").optional()
+    })
+})
+
 export const SignInSchema = z.object({
     email: z.string().min(1, {message: "Email is required"}).email({message: "Please provide a valid email address"}),
     password: z.string().min(6, {message: "Password must be at least 6 characters long."}).max(100, {message: "Password cannot exceed 100 characters"})

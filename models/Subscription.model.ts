@@ -15,7 +15,7 @@ export interface ISubscription {
   deliveryDays: DeliveryDay[];
   address: string;
   allergies?: string;
-  status?: "active" | "cancelled";
+  status?: "active" | "cancelled" | "paused";
   cancelledAt?: Date;
   reactivatedAt?: Date;
   createdAt?: Date;
@@ -39,7 +39,7 @@ const SubscriptionSchema = new Schema<ISubscriptionDoc>(
     },
     status: {
       type: String,
-      enum: ["active", "cancelled"],
+      enum: ["active", "paused", "cancelled"],
       default: "active",
     },
     cancelledAt: Date,

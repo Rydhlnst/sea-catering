@@ -10,10 +10,15 @@ import { ActionResponse, ErrorResponse } from "@/types/global";
 import { AuthCredentials } from "@/types/action";
 import User from "@/models/User.model";
 import Account from "@/models/Account.model";
+import { UnauthorizedError, ValidationError } from "../http-errors";
+
 
 const DASHBOARD_URL = "/dashboard";
+
 type SignUpParams = AuthCredentials & { callbackUrl?: string };
-type SignInParams = Pick<AuthCredentials, "email" | "password"> & { callbackUrl?: string };
+type SignInParams = Pick<AuthCredentials, "email" | "password"> & {
+  callbackUrl?: string;
+};
 
 /**
  * Registers a new user using credentials.
@@ -46,14 +51,16 @@ export async function signUpWithCredentials(
 
   try {
     // Step 3: Check for existing user by email, username, or phone number
-    const existingUser = await User.findOne({ 
-        $or: [{ email }, { username }, { phoneNumber }] 
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }, { phoneNumber }],
     }).session(session);
 
     if (existingUser) {
-      if (existingUser.email === email) throw new Error("This email is already registered.");
-      if (existingUser.username === username) throw new Error("This username is already taken.");
-      if (existingUser.phoneNumber === phoneNumber) throw new Error("This phone number is already used.");
+      const fieldErrors: Record<string, string[]> = {};
+      if (existingUser.email === email) fieldErrors.email = ["This email is already registered."];
+      if (existingUser.username === username) fieldErrors.username = ["This username is already taken."];
+      if (existingUser.phoneNumber === phoneNumber) fieldErrors.phoneNumber = ["This phone number is already used."];
+      throw new ValidationError(fieldErrors);
     }
 
     // Step 4: Hash password using bcrypt
@@ -89,24 +96,20 @@ export async function signUpWithCredentials(
       redirectTo: callbackUrl || DASHBOARD_URL,
     });
 
-    // This line is technically never reached because signIn throws a redirect
     return { success: true };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    // Rollback transaction if an error occurs
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
 
-    // Pass through redirect errors triggered by signIn
     if (error.message?.includes("NEXT_REDIRECT")) {
       throw error;
     }
 
-    // For all other errors (e.g., validation), format with custom error handler
     return handleError(error) as ErrorResponse;
   } finally {
-    // Always end the session to prevent connection leaks
     await session.endSession();
   }
 }
@@ -135,8 +138,23 @@ export async function signInWithCredentials(
   const { email, password } = validationResult.params!;
 
   try {
-    // Step 2: Delegate authentication to NextAuth signIn function
-    // All logic (user lookup, password check) is handled inside the custom `authorize`
+    // Step 2: Check if user and account exist
+    const account = await Account.findOne({
+      provider: "credentials",
+      providerAccountId: email,
+    }).populate("userId");
+
+    if (!account || !account.password || !account.userId) {
+      throw new UnauthorizedError("Email or password is incorrect.");
+    }
+
+    // Step 3: Verify password using bcrypt
+    const isValid = await bcrypt.compare(password, account.password);
+    if (!isValid) {
+      throw new UnauthorizedError("Email or password is incorrect.");
+    }
+
+    // Step 4: Proceed with signIn
     await signIn("credentials", {
       email,
       password,
@@ -144,14 +162,13 @@ export async function signInWithCredentials(
     });
 
     return { success: true };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    // Allow NEXT_REDIRECT errors to propagate
     if (error.message?.includes("NEXT_REDIRECT")) {
       throw error;
     }
 
-    // Handle authentication failures and other issues
     return handleError(error) as ErrorResponse;
   }
 }

@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Package } from "phosphor-react";
 
 import { createSubscription } from "@/lib/actions/subscription.action";
 import { SerializedPlan } from "@/lib/validations";
@@ -72,7 +72,6 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
   ) => {
     set((prev) => {
       const next = new Set(prev);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       next.has(value) ? next.delete(value) : next.add(value);
       return next;
     });
@@ -90,37 +89,32 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
       allergies,
     };
 
-    console.log("📦 Sending:", payload);
-
     try {
       const res = await createSubscription(payload);
-      console.log("📥 Response:", res);
 
       if (res.success) {
-        toast.success("Langganan Berhasil!", {
-          description: "Selamat! Anda akan diarahkan ke dashboard Anda.",
+        toast.success("Subscription Created", {
+          description: "You will be redirected to your dashboard.",
         });
         router.push("/dashboard");
       } else {
-        toast.error("Gagal Membuat Langganan", {
-          description: res.error || "Terjadi kesalahan tak terduga.",
+        toast.error("Failed to subscribe", {
+          description: res.error || "An unexpected error occurred.",
         });
       }
     } catch (err) {
       console.error("🔥 Error:", err);
-      toast.error("Gagal Terhubung", {
-        description: "Tidak dapat menghubungi server.",
+      toast.error("Connection Failed", {
+        description: "Unable to reach the server.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
   return (
     <Card className="w-full">
       <CardContent className="p-6 space-y-6">
-        {/* Kembali */}
         {step > 1 && (
           <Button
             variant="ghost"
@@ -129,17 +123,17 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
             className="mb-2"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Kembali
+            Back
           </Button>
         )}
 
-        {/* Step 1: Pilih Plan */}
+        {/* Step 1: Plan Selection */}
         {step === 1 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold">Langkah 1: Pilih Paket</h2>
+              <h2 className="text-2xl font-semibold">Step 1: Choose a Plan</h2>
               <p className="text-muted-foreground">
-                Pilih paket yang paling sesuai dengan tujuan Anda.
+                Select the most suitable package for your goal.
               </p>
             </div>
             <RadioGroup
@@ -150,16 +144,9 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
             >
               {plans.map((plan) => (
                 <Label key={plan._id} htmlFor={plan._id}>
-                  <Card className="group cursor-pointer overflow-hidden transition-all group-has-[:checked]:border-primary group-has-[:checked]:shadow-lg">
-                    <CardHeader className="p-0">
-                      <div className="relative h-40 w-full">
-                        <Image
-                          src={plan.image || "https://placehold.co/600x400/orange/white?text=Katering"}
-                          alt={plan.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
+                  <Card className="group cursor-pointer transition-all group-has-[:checked]:border-primary group-has-[:checked]:shadow-lg w-full">
+                    <CardHeader className="flex items-center justify-center h-40">
+                      <Package size={96} className="text-primary" weight="duotone" />
                     </CardHeader>
                     <CardContent className="p-4 space-y-2">
                       <div className="flex justify-between items-center">
@@ -169,7 +156,7 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
                       <CardDescription>{plan.description}</CardDescription>
                       <div className="text-xl font-bold">
                         Rp {plan.price.toLocaleString("id-ID")}
-                        <span className="text-muted-foreground text-sm"> /porsi</span>
+                        <span className="text-sm text-muted-foreground"> /portion</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -182,23 +169,23 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
               disabled={!selectedPlan}
               onClick={() => setStep(2)}
             >
-              Lanjut
+              Continue
             </Button>
           </div>
         )}
 
-        {/* Step 2: Jadwal */}
+        {/* Step 2: Schedule */}
         {step === 2 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold">Langkah 2: Atur Jadwal</h2>
+              <h2 className="text-2xl font-semibold">Step 2: Set Your Schedule</h2>
               <p className="text-muted-foreground">
-                Pilih jenis makanan dan hari pengiriman.
+                Choose meal types and delivery days.
               </p>
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-medium">Tipe Makanan</h3>
+              <h3 className="font-medium">Meal Types</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {mealOptions.map((meal) => (
                   <div key={meal} className="flex items-center space-x-2">
@@ -214,7 +201,7 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-medium">Hari Pengiriman</h3>
+              <h3 className="font-medium">Delivery Days</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {dayOptions.map((day) => (
                   <div key={day} className="flex items-center space-x-2">
@@ -235,36 +222,36 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
               disabled={mealTypes.size === 0 || deliveryDays.size === 0}
               onClick={() => setStep(3)}
             >
-              Lanjut
+              Continue
             </Button>
           </div>
         )}
 
-        {/* Step 3: Detail */}
+        {/* Step 3: Details */}
         {step === 3 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold">Langkah 3: Detail Pengiriman</h2>
+              <h2 className="text-2xl font-semibold">Step 3: Delivery Details</h2>
               <p className="text-muted-foreground">
-                Isi alamat lengkap dan pantangan makanan.
+                Enter your address and allergy notes.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Alamat Lengkap</Label>
+              <Label htmlFor="address">Full Address</Label>
               <Textarea
                 id="address"
-                placeholder="Contoh: Jl. Merdeka No. 10, Medan"
+                placeholder="e.g., 123 Freedom St, Medan"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="allergies">Alergi / Pantangan (Opsional)</Label>
+              <Label htmlFor="allergies">Allergies / Preferences (optional)</Label>
               <Input
                 id="allergies"
-                placeholder="Contoh: Alergi udang, tidak suka pedas"
+                placeholder="e.g., allergic to shrimp, no spicy food"
                 value={allergies}
                 onChange={(e) => setAllergies(e.target.value)}
               />
@@ -276,32 +263,32 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
               disabled={!address.trim()}
               onClick={() => setStep(4)}
             >
-              Lanjut ke Konfirmasi
+              Continue to Confirmation
             </Button>
           </div>
         )}
 
-        {/* Step 4: Konfirmasi */}
+        {/* Step 4: Confirmation */}
         {step === 4 && selectedPlan && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold">Langkah 4: Konfirmasi</h2>
-              <p className="text-muted-foreground">Periksa kembali sebelum lanjut.</p>
+              <h2 className="text-2xl font-semibold">Step 4: Confirmation</h2>
+              <p className="text-muted-foreground">Please review your details before proceeding.</p>
             </div>
 
             <Card>
               <CardHeader>
-                <CardTitle>Ringkasan Langganan</CardTitle>
+                <CardTitle>Subscription Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p><strong>Paket:</strong> {selectedPlan.name}</p>
-                <p><strong>Tipe Makanan:</strong> {Array.from(mealTypes).join(", ")}</p>
-                <p><strong>Hari:</strong> {Array.from(deliveryDays).join(", ")}</p>
-                <p><strong>Alamat:</strong> {address}</p>
-                {allergies && <p><strong>Alergi:</strong> {allergies}</p>}
+                <p><strong>Plan:</strong> {selectedPlan.name}</p>
+                <p><strong>Meal Types:</strong> {Array.from(mealTypes).join(", ")}</p>
+                <p><strong>Days:</strong> {Array.from(deliveryDays).join(", ")}</p>
+                <p><strong>Address:</strong> {address}</p>
+                {allergies && <p><strong>Allergies:</strong> {allergies}</p>}
                 <hr />
                 <div className="text-right space-y-1">
-                  <p className="text-sm text-muted-foreground">Estimasi Total per Bulan</p>
+                  <p className="text-sm text-muted-foreground">Estimated Monthly Total</p>
                   <p className="text-2xl font-bold">
                     Rp {totalPrice.toLocaleString("id-ID")}
                   </p>
@@ -315,7 +302,7 @@ export function SubscriptionForm({ plans }: SubscriptionFormProps) {
               disabled={isSubmitting}
               onClick={handleSubmit}
             >
-              {isSubmitting ? "Memproses..." : "Konfirmasi & Lanjutkan"}
+              {isSubmitting ? "Processing..." : "Confirm & Subscribe"}
             </Button>
           </div>
         )}
