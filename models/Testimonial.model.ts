@@ -1,17 +1,19 @@
-import { Schema, model, models, Document, Types } from "mongoose"
+import { Schema, model, models, Document, Types } from "mongoose";
 
 export interface ITestimonial {
-  user: Types.ObjectId
-  subscription?: Types.ObjectId
-  order?: Types.ObjectId
-  message: string
-  rating: number
-  featured?: boolean
+  user: Types.ObjectId;
+  subscription?: Types.ObjectId;
+  order?: Types.ObjectId;
+  message: string;
+  rating: number;
+  featured?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ITestimonialDoc extends ITestimonial, Document {}
 
-const TestimonialSchema = new Schema<ITestimonialDoc>(
+const TestimonialSchema = new Schema<ITestimonial>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -46,7 +48,9 @@ const TestimonialSchema = new Schema<ITestimonialDoc>(
   {
     timestamps: true,
   }
-)
+);
 
-export default models.Testimonial ||
-  model<ITestimonialDoc>("Testimonial", TestimonialSchema)
+const Testimonial =
+  models?.Testimonial || model<ITestimonial>("Testimonial", TestimonialSchema);
+
+export default Testimonial;

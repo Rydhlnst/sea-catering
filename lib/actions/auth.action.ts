@@ -7,7 +7,6 @@ import { signIn } from "@/auth";
 
 import action from "../handlers/action";
 import handleError from "../handlers/error";
-import { NotFoundError } from "../http-errors";
 import { SignInSchema, SignUpSchema } from "../validations";
 import { ActionResponse, ErrorResponse } from "@/types/global";
 import { AuthCredentials } from "@/types/action";
@@ -19,6 +18,11 @@ const DASHBOARD_URL = "/dashboard";
 type SignUpParams = AuthCredentials & { callbackUrl?: string };
 type SignInParams = Pick<AuthCredentials, "email" | "password"> & { callbackUrl?: string };
 
+/**
+ * Mendaftarkan pengguna baru dengan kredensial.
+ * Menggunakan transaksi database untuk memastikan integritas data.
+ * Otomatis login setelah pendaftaran berhasil.
+ */
 export async function signUpWithCredentials(
   params: SignUpParams
 ): Promise<ActionResponse> {
@@ -39,16 +43,16 @@ export async function signUpWithCredentials(
   session.startTransaction();
 
   try {
-    const existingUser = await User.findOne({ email }).session(session);
-    if (existingUser) throw new Error("User with this email already exists");
+    // Validasi data unik di dalam transaksi
+    const existingUser = await User.findOne({ 
+        $or: [{ email }, { username }, { phoneNumber }] 
+    }).session(session);
 
-    const existingUsername = await User.findOne({ username }).session(session);
-    if (existingUsername) throw new Error("Username already exists");
-
-    const existingPhoneNumber = await User.findOne({ phoneNumber }).session(
-      session
-    );
-    if (existingPhoneNumber) throw new Error("Phone number is already in use");
+    if (existingUser) {
+      if (existingUser.email === email) throw new Error("Email ini sudah terdaftar.");
+      if (existingUser.username === username) throw new Error("Username ini sudah digunakan.");
+      if (existingUser.phoneNumber === phoneNumber) throw new Error("Nomor telepon ini sudah digunakan.");
+    }
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -70,44 +74,43 @@ export async function signUpWithCredentials(
       { session }
     );
 
-    // Langkah penting: commit transaksi SEBELUM memanggil signIn
+    // Commit transaksi untuk menyimpan pengguna ke DB secara permanen
     await session.commitTransaction();
 
-    // Panggil signIn SETELAH transaksi selesai.
-    // Error redirect dari sini akan ditangani oleh blok catch di bawah.
+    // Panggil signIn untuk otomatis login.
+    // signIn akan melempar error redirect khusus jika berhasil, yang akan ditangkap di bawah.
     await signIn("credentials", {
       email,
       password,
       redirectTo: callbackUrl || DASHBOARD_URL,
     });
 
-    // Kode ini tidak akan tercapai jika signIn berhasil
+    // Baris ini secara teknis tidak akan pernah tercapai karena `signIn` akan melempar error.
     return { success: true };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    // Cek apakah transaksi masih aktif sebelum mencoba abort.
-    // Jika sudah di-commit, session.inTransaction() akan false.
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
 
-    // Tangani error redirect secara khusus
-    if (
-      error.type === "CredentialsSignin" ||
-      error.message?.includes("NEXT_REDIRECT")
-    ) {
-      throw error; // Biarkan Next.js yang menangani redirect
+    // Jika error berasal dari `signIn`, itu adalah error redirect yang valid.
+    // Biarkan Next.js yang menanganinya dengan melemparnya kembali.
+    if (error.message?.includes("NEXT_REDIRECT")) {
+      throw error;
     }
     
-    // Untuk semua error lain, kembalikan respons error yang diformat
+    // Untuk semua error lain (misal: "Email sudah terdaftar"), format dengan handler.
     return handleError(error) as ErrorResponse;
   } finally {
-    // Selalu tutup session di akhir
+    // Pastikan sesi selalu ditutup untuk mencegah kebocoran koneksi.
     await session.endSession();
   }
 }
 
-// Tidak ada perubahan yang diperlukan di signInWithCredentials karena tidak menggunakan transaksi
+/**
+ * Memproses login pengguna dengan kredensial.
+ * Fungsi ini mendelegasikan semua logika otentikasi ke fungsi 'authorize' di auth.ts.
+ */
 export async function signInWithCredentials(
   params: SignInParams
 ): Promise<ActionResponse> {
@@ -124,21 +127,10 @@ export async function signInWithCredentials(
   const { email, password } = validationResult.params!;
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) throw new NotFoundError("User not found");
-
-    const existingAccount = await Account.findOne({
-      provider: "credentials",
-      providerAccountId: email,
-    });
-    if (!existingAccount) throw new NotFoundError("Account not found");
-
-    const passwordMatch = await bcrypt.compare(
-      password,
-      existingAccount.password
-    );
-    if (!passwordMatch) throw new Error("Password does not match");
-
+    // 💡 PERBAIKAN: Langsung panggil signIn.
+    // Tidak perlu lagi memeriksa user, account, atau password di sini.
+    // Semua logika itu seharusnya sudah ada di dalam fungsi 'authorize' di auth.ts.
+    // Ini membuat 'authorize' sebagai satu-satunya sumber kebenaran untuk login.
     await signIn("credentials", {
       email,
       password,
@@ -148,12 +140,14 @@ export async function signInWithCredentials(
     return { success: true };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    if (
-      error.type === "CredentialsSignin" ||
-      error.message?.includes("NEXT_REDIRECT")
-    ) {
+    // Sama seperti signUp, tangani error redirect dari signIn.
+    // Error lain (seperti 'CredentialsSignin' yang dilempar dari 'authorize') 
+    // akan ditangani di sini dan diformat oleh handleError.
+    if (error.message?.includes("NEXT_REDIRECT")) {
       throw error;
     }
+
+    // `handleError` akan menangkap error `CredentialsSignin` dan mengambil pesan yang relevan.
     return handleError(error) as ErrorResponse;
   }
 }

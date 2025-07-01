@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react"; // ✅ import ini
+import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard } from "lucide-react";
+// import { LogOut, LayoutDashboard, MessageSquare } from "lucide-react";
 import { Button } from "../ui/button";
+import { Chat, Layout, SignOut } from "phosphor-react";
 
 const navItems = [
-  { href: "/dashboard", label: "Beranda", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Beranda", icon: Layout },
 ];
 
 export function DashboardNavbar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-white/80 backdrop-blur">
@@ -25,7 +27,7 @@ export function DashboardNavbar() {
             SEA Catering
           </Link>
 
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-2 md:gap-4">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -36,16 +38,31 @@ export function DashboardNavbar() {
                 )}
               >
                 <item.icon className="h-4 w-4" />
-                {item.label}
+                <span className="hidden md:inline">{item.label}</span>
               </Link>
             ))}
 
-            {/* ✅ Tombol Logout */}
+            {session?.user?.role !== "admin" && (
+              <Link
+                href="/dashboard/testimonials"
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition hover:bg-muted",
+                  pathname === "/dashboard/testimonials" && "bg-muted font-semibold"
+                )}
+              >
+                <Chat className="h-4 w-4" />
+                <span className="hidden md:inline">Testimoni</span>
+              </Link>
+            )}
+
             <Button
+              variant="ghost"
+              size="sm"
               onClick={() => signOut({ callbackUrl: "/" })}
+              className="flex items-center gap-2 px-3"
             >
-              <LogOut className="h-4 w-4" />
-              Logout
+              <SignOut className="h-4 w-4" />
+              <span className="hidden md:inline">Logout</span>
             </Button>
           </nav>
         </div>

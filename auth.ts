@@ -40,25 +40,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
-      // Inject role saat login
-      if (user) {
+    async jwt({ token, user, account }) {
+    // Blok ini berjalan saat pengguna pertama kali sign-in
+    if (user && account) {
+      // 1. Untuk login via 'credentials', user.id sudah merupakan _id dari MongoDB.
+      if (account.type === "credentials") {
         token.sub = user.id;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        token.role = (user as any).role ?? "user";
-      }
-
-      // Fallback untuk refresh session (jika role belum tersedia)
-      if (!token.role) {
-        const { data: acc } = await api.accounts.getByProvider(token.email as string) as ActionResponse<IAccountDoc>;
-        if (acc) {
-          const { data: dbUser } = await api.users.getById(acc.userId.toString()) as ActionResponse<IUserDoc>;
-          if (dbUser) token.role = dbUser.role ?? "user";
+        token.role = (user as any).role;
+      } 
+      // 2. Untuk login via 'oauth' (Google/GitHub), user.id adalah ID dari provider.
+      // Kita harus cari user di DB kita untuk mendapatkan _id MongoDB yang sebenarnya.
+      else if (account.type === "oauth") {
+        const { data: dbUser } = await api.users.getByEmail(user.email as string) as ActionResponse<IUserDoc>;
+        if (dbUser) {
+          token.sub = (dbUser as { _id: { toString: () => string } })._id.toString();
+          token.role = dbUser.role;
         }
       }
-
-      return token;
-    },
+    }
+    // `session` callback akan menggunakan token.sub dan token.role ini
+    return token;
+  },
 
     async session({ session, token }) {
       session.user.id = token.sub as string;
